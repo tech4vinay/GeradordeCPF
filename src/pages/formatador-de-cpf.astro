@@ -1,0 +1,225 @@
+---
+import Base from '../layouts/Base.astro';
+import FormatadorTool from '../components/FormatadorTool.astro';
+import Prose from '../components/Prose.astro';
+import { CARD } from '../lib/ui';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'Formatador de CPF Online — Adicionar ou Remover Pontuação | Grátis';
+const descricao =
+  'Formatador de CPF online e grátis: adicione ou remova a pontuação de um CPF ou lista inteira em segundos. Sem cadastro e sem enviar dados para servidor.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/formatador-de-cpf'));
+
+const appSchema = {
+  '@type': 'WebApplication',
+  '@id': `${SITE.url}/formatador-de-cpf#formatador`,
+  name: 'Formatador de CPF',
+  alternateName: ['Formatador de CPF Online', 'Adicionar Pontuação no CPF', 'Máscara de CPF'],
+  url: `${SITE.url}/formatador-de-cpf`,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  browserRequirements: 'Requer JavaScript',
+  inLanguage: 'pt-BR',
+  description: descricao,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/formatador-de-cpf'),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+  featureList: [
+    'Adiciona a pontuação padrão 000.000.000-00',
+    'Remove pontuação, deixando só os 11 dígitos',
+    'Converte uma lista inteira, uma linha por CPF',
+    'Copia a saída com um clique',
+    'Nenhum dado enviado para servidor',
+  ],
+};
+
+// Disjunto do FAQ da home e do de /perguntas-frequentes: só perguntas sobre o
+// funcionamento específico do formatador.
+const FAQ = [
+  {
+    p: 'O que o formatador de CPF faz exatamente?',
+    r: 'Ele reorganiza a pontuação de um número de 11 dígitos, nos dois sentidos: transforma 11144477735 em 111.444.777-35, ou o inverso, tirando os pontos e o traço e deixando só os dígitos. Não altera nenhum dígito, só a apresentação.',
+  },
+  {
+    p: 'O formatador corrige um CPF com dígito verificador errado?',
+    r: 'Não. Formatar é só adicionar ou remover pontuação; a ferramenta não recalcula nem corrige dígito nenhum. Se um dos CPFs da lista não passar na validação, a saída avisa quantas linhas caem nesse caso, mas os 11 dígitos permanecem exatamente como você digitou. Para corrigir, use o validador: ele mostra qual seria o par de dígitos verificadores correto.',
+  },
+  {
+    p: 'Quais formatos de entrada o formatador aceita?',
+    r: 'Qualquer mistura: números sem pontuação (11144477735), já pontuados (111.444.777-35), ou até com espaços ao redor. O formatador ignora tudo o que não é dígito antes de decidir o que fazer, então cada linha pode chegar em um formato diferente sem problema.',
+  },
+  {
+    p: 'Dá para formatar uma lista inteira de CPFs de uma vez?',
+    r: 'Sim, essa é a função principal da ferramenta. Cole uma lista com um CPF por linha no campo de entrada, escolha "Adicionar pontuação" ou "Remover pontuação", e a saída inteira aparece de uma vez, pronta para copiar. Não tem limite prático de linhas.',
+  },
+  {
+    p: 'O que acontece com uma linha que não tem 11 dígitos?',
+    r: 'Ela é devolvida sem alteração. O formatador só aplica ou remove a máscara em números com exatamente 11 dígitos; qualquer linha fora disso (vazia, incompleta ou com texto) passa direto para a saída do jeito que entrou, para você identificar o problema em vez de a ferramenta inventar uma formatação errada.',
+  },
+  {
+    p: 'Qual a diferença entre o formatador e o validador de CPF?',
+    r: 'O formatador só cuida da aparência: pontuação sim ou não. O validador confere se o número é matematicamente correto pelo cálculo do módulo 11. Os dois são independentes: dá para formatar um CPF inválido, e a saída avisa quando isso acontece, mas não impede a conversão.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  '@id': `${SITE.url}/formatador-de-cpf#faq`,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/formatador-de-cpf`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/formatador-de-cpf'),
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.p,
+    acceptedAnswer: { '@type': 'Answer', text: item.r },
+  })),
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={[appSchema, faqSchema]} migalha="Formatador de CPF">
+  <!-- Hero -->
+  <div class="relative isolate overflow-hidden border-b border-hairline">
+    <div
+      aria-hidden="true"
+      class="mesh-hero pointer-events-none absolute inset-x-0 -top-32 -z-10 h-[26rem] opacity-[0.11] blur-3xl"
+    >
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 pt-12 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
+      <div class="max-w-3xl">
+        <p class="eyebrow mb-3 sm:mb-4">Dados de teste para devs &amp; QA</p>
+        <h1 class="display-xl text-ink">Formatador de CPF</h1>
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-body sm:mt-5 sm:text-lg">
+          Adicione ou remova a pontuação de um CPF, ou de uma lista inteira, em segundos. Aceita
+          qualquer mistura de números pontuados e sem pontuação, um por linha, sem enviar nada
+          para servidor nenhum.
+        </p>
+      </div>
+
+      <div class="mt-8 sm:mt-10">
+        <FormatadorTool />
+      </div>
+    </div>
+  </div>
+
+  <!-- Aprofundar -->
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <a href="/" class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}>
+        <h3 class="heading-md text-ink">Gerar CPFs de teste</h3>
+        <p class="mt-2 text-sm text-body">Crie de 1 a 1000 CPFs válidos e aleatórios.</p>
+      </a>
+      <a
+        href="/validador-de-cpf"
+        class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}
+      >
+        <h3 class="heading-md text-ink">Validar CPF</h3>
+        <p class="mt-2 text-sm text-body">Confira se um CPF é válido e onde ele falha.</p>
+      </a>
+      <a
+        href="/codigo"
+        class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}
+      >
+        <h3 class="heading-md text-ink">Código pronto</h3>
+        <p class="mt-2 text-sm text-body">Formatar e validar CPF em seis linguagens.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Conteúdo SEO -->
+  <section class="border-t border-hairline">
+    <Prose>
+      <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+      <h2>Formatador de CPF online: o que ele faz e quando usar</h2>
+      <p>
+        Um número de CPF tem sempre 11 dígitos, mas costuma aparecer de duas formas diferentes:
+        pontuado, no padrão <code>000.000.000-00</code> que aparece em documentos e telas de
+        cadastro, ou "cru", só com os 11 dígitos, <code>00000000000</code>, formato comum em
+        exportações de banco de dados, planilhas e arquivos CSV. Este <strong>formatador de CPF
+        online</strong> converte entre os dois formatos instantaneamente, um CPF por vez ou uma
+        lista inteira de uma vez, sem instalar nada e sem escrever uma linha de código.
+      </p>
+      <p>
+        A ferramenta aceita qualquer mistura de entrada: números já pontuados, sem pontuação, ou
+        até os dois formatos misturados na mesma lista, um CPF por linha. Basta colar tudo no
+        campo de entrada e escolher a direção da conversão: <strong>adicionar</strong> a
+        pontuação padrão ou <strong>remover</strong> tudo o que não for dígito. A saída aparece
+        pronta para copiar, com um botão dedicado para isso.
+      </p>
+
+      <h3>Por que formatar CPF é um problema comum no desenvolvimento</h3>
+      <p>
+        Sistemas diferentes esperam o CPF em formatos diferentes, e isso gera trabalho manual
+        repetitivo com bastante frequência: uma planilha exportada de um sistema legado costuma
+        trazer os números sem pontuação, enquanto o formulário de outro sistema exige a máscara
+        completa para validar o campo. Migrar dados entre bancos, preparar uma massa de teste para
+        importação em lote ou simplesmente exibir um CPF de forma legível numa interface são
+        situações em que reformatar dezenas ou centenas de números um por um não é uma boa forma
+        de gastar tempo. Colar a lista inteira aqui resolve em um clique.
+      </p>
+
+      <h3>Formatar não é validar</h3>
+      <p>
+        Vale deixar claro: o formatador só mexe na <em>apresentação</em> do número, pontuação sim
+        ou não. Ele não confere se os dígitos verificadores estão corretos, nem corrige um CPF com
+        erro. Quando alguma linha da lista não passa na validação, a ferramenta avisa quantas caem
+        nessa situação, mas converte a formatação mesmo assim, porque formatar e validar são
+        operações independentes. Para saber se um CPF é matematicamente válido, e, se não for,
+        qual dígito verificador está errado, use o <a href="/validador-de-cpf">validador de
+        CPF</a>, que faz exatamente essa checagem com base no algoritmo do módulo 11, explicado em
+        detalhe na página <a href="/como-validar-cpf">como validar um CPF</a>.
+      </p>
+
+      <h3>Formatando dados de teste em lote</h3>
+      <p>
+        Quem usa o <a href="/">gerador de CPF</a> deste site já pode escolher gerar direto com ou
+        sem pontuação, mas nem sempre a lista de CPFs vem daqui: pode ser um extrato de banco de
+        dados, um arquivo recebido de outro time ou um export antigo. Nesses casos, colar a lista
+        neste formatador resolve a conversão de uma vez, sem precisar abrir planilha nem escrever
+        uma expressão regular. Para quem prefere formatar programaticamente dentro do próprio
+        código, as implementações da função de validação e geração (que servem de base para
+        escrever a própria rotina de formatação) estão disponíveis em
+        <a href="/codigo">JavaScript, TypeScript, Python, PHP, Java e C#</a>.
+      </p>
+
+      <h3>Privacidade</h3>
+      <p>
+        Nenhum CPF colado nesta página é enviado a servidor algum. A conversão, seja de um número
+        só ou de uma lista inteira, acontece em JavaScript dentro do seu próprio navegador; o site
+        não tem backend para onde os dados poderiam ir. A página continua funcionando mesmo offline
+        depois de carregada uma vez.
+      </p>
+    </Prose>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-hairline">
+    <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <p class="eyebrow mb-3">FAQ</p>
+      <h2 class="heading-lg text-ink">Perguntas frequentes sobre o formatador de CPF</h2>
+
+      <dl class="mt-8 divide-y divide-hairline border-y border-hairline sm:mt-10">
+        {
+          FAQ.map((item) => (
+            <div class="py-6">
+              <dt class="heading-md text-ink">{item.p}</dt>
+              <dd class="mt-2.5 leading-relaxed text-body">{item.r}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <p class="mt-8 text-sm text-body">
+        Mais dúvidas, incluindo legalidade e privacidade, na página de
+        <a class="text-link underline underline-offset-2" href="/perguntas-frequentes">
+          perguntas frequentes
+        </a>.
+      </p>
+    </div>
+  </section>
+</Base>

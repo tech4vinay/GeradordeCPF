@@ -1,0 +1,262 @@
+@import "tailwindcss" source("../");
+
+/*
+  Tokens do DESIGN.md (sistema Geist / Vercel).
+  Tinta quase-preta sobre folha quase-branca; a única cor decorativa do site é o
+  mesh gradient do hero na home.
+*/
+@theme {
+  /* Tinta e superfícies */
+  --color-ink: #171717;
+  --color-on-ink: #ffffff;
+  --color-body: #4d4d4d;
+  /* #8f8f8f dava ~3.1:1 sobre --color-canvas — abaixo do 4.5:1 do WCAG AA para texto
+     normal (eyebrow é 12px, não conta como "large text"). #707070 mantém a mesma
+     hierarquia visual (mais claro que --color-body) mas passa em ~4.7:1. */
+  --color-mute: #707070;
+  --color-faint: #a1a1a1;
+  --color-hairline: #ebebeb;
+  --color-hairline-soft: #f2f2f2;
+  --color-canvas: #fafafa;
+  --color-elevated: #ffffff;
+
+  /* Acentos — links, foco e estados semânticos */
+  --color-link: #0070f3;
+  --color-link-deep: #0761d1;
+  --color-link-soft: #d3e5ff;
+  --color-erro: #ee0000;
+  --color-erro-deep: #c50000;
+  --color-alerta: #f5a623;
+  --color-alerta-soft: #ffefcf;
+  --color-alerta-deep: #ab570a;
+
+  /* Família cromática — só ilustração e paradas do gradiente, nunca chrome */
+  --color-violet: #7928ca;
+  --color-cyan: #50e3c2;
+  --color-pink: #ff0080;
+  --color-amber: #f9cb28;
+
+  /* Tipografia — Geist via astro:assets/Font */
+  --font-sans: var(--font-geist), Inter, Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Raio: 6px para chrome funcional, 12–16px para cards, pill para CTA */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 100px;
+}
+
+/*
+  Modo escuro derivado. O DESIGN.md especifica só a paleta clara, então esta é uma
+  inversão consistente dos papéis (canvas/elevated/hairline e a escada de texto).
+
+  Três estados: o padrão segue o sistema; `data-theme` no <html> força um dos dois.
+  O bloco se repete porque @theme precisa ficar no topo, fora de media queries, e
+  CSS não tem como reaproveitar um bloco de declarações.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-ink: #ededed;
+    --color-on-ink: #0a0a0a;
+    --color-body: #a1a1a1;
+    --color-mute: #8f8f8f;
+    --color-faint: #6f6f6f;
+    --color-hairline: #2e2e2e;
+    --color-hairline-soft: #1f1f1f;
+    --color-canvas: #0a0a0a;
+    --color-elevated: #141414;
+    --color-link: #3291ff;
+    --color-link-deep: #0070f3;
+    --color-link-soft: #10233f;
+    --color-erro: #ff4d4d;
+    --color-alerta-soft: #2b1d06;
+    --color-alerta-deep: #f5a623;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-ink: #ededed;
+  --color-on-ink: #0a0a0a;
+  --color-body: #a1a1a1;
+  --color-mute: #8f8f8f;
+  --color-faint: #6f6f6f;
+  --color-hairline: #2e2e2e;
+  --color-hairline-soft: #1f1f1f;
+  --color-canvas: #0a0a0a;
+  --color-elevated: #141414;
+  --color-link: #3291ff;
+  --color-link-deep: #0070f3;
+  --color-link-soft: #10233f;
+  --color-erro: #ff4d4d;
+  --color-alerta-soft: #2b1d06;
+  --color-alerta-deep: #f5a623;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+/*
+  Mostra um elemento só num dos temas — usado pelos ícones do botão de tema.
+  Precisa viver aqui, e não num <style> de componente: o estilo com escopo do Astro
+  é preso ao componente que declara o elemento, e o <svg> vem de Icon.astro.
+  Fora de @layer de propósito, para vencer os utilitários do Tailwind.
+*/
+.so-claro {
+  display: block;
+}
+.so-escuro {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .so-claro {
+    display: none;
+  }
+  :root:not([data-theme='light']) .so-escuro {
+    display: block;
+  }
+}
+:root[data-theme='dark'] .so-claro {
+  display: none;
+}
+:root[data-theme='dark'] .so-escuro {
+  display: block;
+}
+:root[data-theme='light'] .so-claro {
+  display: block;
+}
+:root[data-theme='light'] .so-escuro {
+  display: none;
+}
+
+/*
+  A logo em public/logo.webp é um wordmark branco (pensado para fundo escuro).
+  No claro invertemos as cores pra virar escuro sobre --color-canvas claro.
+*/
+.logo-nav {
+  filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .logo-nav {
+    filter: none;
+  }
+}
+:root[data-theme='dark'] .logo-nav {
+  filter: none;
+}
+:root[data-theme='light'] .logo-nav {
+  filter: invert(1);
+}
+
+/*
+  A escada tipográfica do Geist: quanto maior o título, mais apertado o tracking.
+  Utilitários próprios usam @utility (não @layer) no Tailwind v4.
+*/
+@utility display-xl {
+  font-size: clamp(2rem, 1.5rem + 2.2vw, 3rem);
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+}
+
+@utility heading-lg {
+  font-size: clamp(1.375rem, 1.15rem + 1.1vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+@utility heading-md {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+/* Eyebrow de seção: Geist Mono, caixa alta, como cabeçalho de spec sheet. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.33;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-mute);
+}
+
+/*
+  O CPF em destaque — a razão de existir do site.
+  Encolhe até 320px sem quebrar a linha nem estourar o card.
+*/
+@utility cpf-destaque {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 0.55rem + 4.6vw, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+/* Mesh do hero em classe, não em atributo style: evita precisar de style-src-attr no CSP. */
+@utility mesh-hero {
+  background:
+    radial-gradient(38rem 22rem at 12% 28%, var(--color-cyan), transparent 60%),
+    radial-gradient(34rem 20rem at 40% 8%, var(--color-link), transparent 60%),
+    radial-gradient(32rem 22rem at 68% 30%, var(--color-violet), transparent 60%),
+    radial-gradient(30rem 20rem at 88% 6%, var(--color-pink), transparent 60%),
+    radial-gradient(28rem 18rem at 58% 52%, var(--color-amber), transparent 60%);
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-canvas);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Âncoras de título não ficam sob o header fixo. */
+  :target {
+    scroll-margin-top: 5rem;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Nunca remover o foco sem repor: anel visível e consistente em todo controle. */
+  :focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

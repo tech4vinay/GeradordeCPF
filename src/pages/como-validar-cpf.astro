@@ -1,0 +1,167 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+import { explicarCalculo, formatar } from '../lib/cpf';
+
+const titulo = 'Como validar um CPF: o algoritmo do módulo 11 passo a passo';
+const descricao =
+  'O cálculo dos dois dígitos verificadores do CPF explicado com exemplo: pesos, soma, resto da divisão por 11 e os casos especiais que quase todo mundo erra.';
+
+// O exemplo é calculado pela mesma função que a ferramenta usa — a página não tem
+// como divergir da implementação.
+const EXEMPLO = '11144477735';
+const passos = explicarCalculo(EXEMPLO);
+
+// HowTo foi descontinuado pelo Google em setembro de 2023 e depois removido de vez: o
+// tipo não rende mais nenhum rich result. TechArticle é o mesmo tipo que /codigo usa e
+// carrega autoria e data, que é o que esta página precisa declarar.
+const schema = {
+  '@type': 'TechArticle',
+  '@id': `${SITE.url}/como-validar-cpf#artigo`,
+  headline: titulo,
+  name: 'Como validar um CPF',
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/como-validar-cpf`,
+  proficiencyLevel: 'Beginner',
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/como-validar-cpf'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Como validar um CPF">
+  <Cabecalho
+    eyebrow="Algoritmo"
+    titulo="Como validar um CPF"
+    lead="O CPF não é um número qualquer: os dois últimos dígitos são calculados a partir dos nove primeiros. Isso é o que permite detectar um dígito trocado sem consultar base nenhuma."
+  />
+
+  <Prose>
+    <h2>A estrutura do número</h2>
+    <p>
+      Os 11 dígitos se dividem em três partes. Tomando <code>{formatar(EXEMPLO)}</code> como
+      exemplo:
+    </p>
+    <ul>
+      <li>
+        <strong>Dígitos 1 a 8</strong>: o número de série dentro da região.
+      </li>
+      <li>
+        <strong>Dígito 9</strong>: a <a href="/o-que-e-cpf#regiao">região fiscal</a> onde o CPF
+        foi emitido.
+      </li>
+      <li>
+        <strong>Dígitos 10 e 11</strong>: os verificadores, calculados abaixo.
+      </li>
+    </ul>
+
+    <h2>O cálculo</h2>
+    <p>
+      Os dois dígitos usam a mesma receita, chamada <strong>módulo 11</strong>. Muda apenas
+      quantos dígitos entram na conta e, por consequência, os pesos:
+    </p>
+    <ol>
+      <li>Multiplique cada dígito por um peso, que começa alto e decresce até 2.</li>
+      <li>Some todos os produtos.</li>
+      <li>Divida a soma por 11 e guarde o <strong>resto</strong>.</li>
+      <li>
+        Se o resto for <strong>menor que 2</strong>, o dígito verificador é <strong>0</strong>.
+        Caso contrário, é <strong>11 menos o resto</strong>.
+      </li>
+    </ol>
+    <p>
+      O passo 4 é onde a maioria das implementações caseiras erra: esquecer o caso do resto 0 ou 1
+      produz um validador que rejeita CPFs legítimos terminados em 0.
+    </p>
+
+    <h2>Exemplo resolvido: {formatar(EXEMPLO)}</h2>
+
+    {
+      passos.map((p) => (
+        <>
+          <h3>{p.rotulo} dígito verificador</h3>
+          <p>
+            Entram {p.digitos.length} dígitos, com pesos de {p.pesos[0]} a 2:
+          </p>
+          <div class="my-4 overflow-x-auto rounded-md border border-hairline bg-elevated p-4">
+            <table class="w-full text-center font-mono text-sm tabular-nums">
+              <tbody>
+                <tr>
+                  <th scope="row" class="pr-3 text-left text-xs font-medium text-mute">Dígito</th>
+                  {p.digitos.map((d) => (
+                    <td class="px-1.5 text-ink">{d}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row" class="pr-3 text-left text-xs font-medium text-mute">Peso</th>
+                  {p.pesos.map((w) => (
+                    <td class="px-1.5 text-body">{w}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row" class="pr-3 text-left text-xs font-medium text-mute">Produto</th>
+                  {p.produtos.map((v) => (
+                    <td class="px-1.5 text-ink">{v}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Soma = <strong>{p.soma}</strong>. Dividindo por 11, o resto é{' '}
+            <strong>{p.resto}</strong>.{' '}
+            {p.resto < 2
+              ? 'Como o resto é menor que 2, o dígito é 0.'
+              : `Como o resto é 2 ou mais, o dígito é 11 − ${p.resto} = ${p.resultado}.`}{' '}
+            O {p.rotulo.toLowerCase()} dígito verificador é <strong>{p.resultado}</strong>.
+          </p>
+        </>
+      ))
+    }
+
+    <p>
+      Os dois dígitos calculados são <strong>{passos.map((p) => p.resultado).join('')}</strong>, que
+      é exatamente como <code>{formatar(EXEMPLO)}</code> termina. O CPF é válido.
+    </p>
+
+    <h2>Os dois casos especiais</h2>
+    <h3>Resto 0 ou 1</h3>
+    <p>
+      Quando a soma é divisível por 11, ou deixa resto 1, o dígito verificador é <strong>0</strong>.
+      Aplicar 11 menos o resto nesses casos daria 11 ou 10, números de dois dígitos, que não cabem
+      numa posição. Cada dígito verificador cai nessa situação em 2 dos 11 restos possíveis, ou seja
+      18,2% das vezes; como basta um dos dois para quebrar a conta, um validador que pula essa regra
+      rejeita <strong>cerca de um terço</strong> dos CPFs válidos (40/121, ou 33,1%).
+    </p>
+
+    <h3>Todos os dígitos iguais</h3>
+    <p>
+      <code>111.111.111-11</code>, <code>000.000.000-00</code> e as outras oito sequências desse
+      tipo <strong>passam</strong> no cálculo do módulo 11. Ainda assim não são CPFs válidos, e
+      precisam ser rejeitadas por uma regra à parte. Como são exatamente o que alguém digita para
+      testar um formulário, esquecer esse caso costuma custar caro.
+    </p>
+
+    <h2>Implementações prontas</h2>
+    <p>
+      A função de validação escrita e comentada em
+      {
+        LINGUAGENS.map((l, i) => (
+          <>
+            {i > 0 && (i === LINGUAGENS.length - 1 ? ' e ' : ', ')}
+            <a href={`/codigo#${l.slug}`}>{l.nome}</a>
+          </>
+        ))
+      }.
+    </p>
+    <p>
+      Para ver a conta acontecendo com números novos, o <a href="/">gerador</a> mostra a memória de
+      cálculo de cada CPF que produz.
+    </p>
+  </Prose>
+</Base>

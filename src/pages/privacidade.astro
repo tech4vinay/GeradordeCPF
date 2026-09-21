@@ -1,0 +1,130 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'Política de Privacidade';
+const descricao =
+  'O que este site coleta: nenhum CPF digitado ou gerado, apenas métricas anônimas via Google Analytics. Cookies, base legal e seus direitos sob a LGPD.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/privacidade'));
+
+const schema = {
+  '@type': 'WebPage',
+  '@id': `${SITE.url}/privacidade#pagina`,
+  name: titulo,
+  description: descricao,
+  inLanguage: SITE.idioma,
+  url: `${SITE.url}/privacidade`,
+  dateModified: atualizadoEm('/privacidade'),
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Privacidade">
+  <Cabecalho eyebrow="Legal" titulo="Política de Privacidade" />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <p>
+      Resumo: os CPFs que você digita ou gera <strong>nunca saem do seu navegador</strong>. O que
+      coletamos é métrica de audiência anônima do site (quantas pessoas visitam, de onde e em qual
+      dispositivo) via Google Analytics. Esta página detalha exatamente o quê, por quê e como
+      remover isso do seu histórico se quiser.
+    </p>
+
+    <h2>Dados que você digita</h2>
+    <p>
+      CPFs digitados no validador ou no formatador, e CPFs gerados pela ferramenta,
+      <strong>nunca saem do seu dispositivo</strong>. O processamento é feito em JavaScript na
+      própria página. Não existe requisição de rede carregando esses valores, não há servidor de
+      aplicação para recebê-los e nada é registrado em log, nem o nosso, nem o do Google Analytics.
+    </p>
+    <p>
+      Os parâmetros de configuração que aparecem na URL (como <code>?uf=SP&amp;qtd=10</code>)
+      guardam apenas suas preferências do gerador (quantidade, estado e pontuação). Nenhum CPF é
+      colocado na URL.
+    </p>
+    <p>
+      O único dado salvo no seu dispositivo é a preferência de tema claro/escuro, guardada em
+      <code>localStorage</code> sob a chave <code>tema</code>. Fica só no seu navegador, não é
+      lida por nós e não sai da sua máquina.
+    </p>
+
+    <h2>Cookies e Google Analytics</h2>
+    <p>
+      O site usa o <strong>Google Analytics 4</strong> para medir audiência: quantas visitas,
+      quais páginas são lidas, de que país e em que tipo de dispositivo. Para isso, o Google define
+      cookies de terceiro (tipicamente <code>_ga</code> e <code>_ga_*</code>) no seu navegador, com
+      validade padrão de até 2 anos, e recebe dados pseudonimizados como endereço IP, tipo de
+      navegador, sistema operacional e as páginas visitadas. O Google processa esses dados como
+      operador, sob sua própria <a href="https://policies.google.com/privacy" rel="noopener">política
+      de privacidade</a>.
+    </p>
+    <p>
+      Nenhum CPF, digitado ou gerado, é enviado ao Google Analytics: a ferramenta em si não tem
+      acesso a esses valores, porque eles nunca deixam o JavaScript da página de geração.
+    </p>
+    <p>
+      Para não ser medido, use o <a
+        href="https://tools.google.com/dlpage/gaoptout"
+        rel="noopener">complemento oficial de opt-out do Google Analytics</a
+      >, ou bloqueie cookies de terceiros e scripts de <code>googletagmanager.com</code> nas
+      configurações do seu navegador ou num bloqueador de rastreadores.
+    </p>
+
+    <h2>Base legal (LGPD)</h2>
+    <p>
+      O tratamento dos dados de audiência descrito acima se apoia no <strong>legítimo
+      interesse</strong> (art. 7º, IX, da Lei 13.709/2018) em entender o uso do site para mantê-lo
+      no ar e priorizar melhorias. Nenhuma outra finalidade é perseguida, e nenhum dado de audiência
+      é vendido, cruzado com bases de terceiros ou usado para decisões automatizadas sobre pessoas.
+    </p>
+
+    <h2>Fontes e outros recursos</h2>
+    <p>
+      As fontes tipográficas são servidas pelo próprio domínio, não pelo Google Fonts, então
+      carregá-las não gera requisição para terceiros. O Google Analytics, descrito acima, é o único
+      serviço de terceiro ativo no site.
+    </p>
+
+    <h2>Dados de acesso do provedor</h2>
+    <p>
+      Como qualquer site, o provedor de hospedagem registra dados técnicos de requisição (endereço
+      IP, data e agente de usuário) para operar a rede, servir os arquivos e conter abuso. Esses
+      registros são do provedor, não nossos, e não são cruzados com nada que você faça na página.
+    </p>
+
+    <h2>Seus direitos</h2>
+    <p>
+      A LGPD garante acesso, correção, anonimização, portabilidade e exclusão de dados pessoais
+      tratados por um serviço, além do direito de revogar consentimento a qualquer momento. Como não
+      mantemos cadastro de usuários nem base de dados própria, o único dado pessoal tratado aqui é o
+      de audiência via Google Analytics, e o opt-out acima já cobre a exclusão futura. Para dúvidas,
+      reclamações ou solicitações formais, use o contato abaixo.
+    </p>
+
+    <h2>Menores de idade</h2>
+    <p>
+      O site não coleta cadastro nem verifica idade: não há conta de usuário. Como qualquer
+      ferramenta pública, presume-se uso por profissionais e estudantes de desenvolvimento de
+      software.
+    </p>
+
+    <h2>Contato</h2>
+    <p>
+      Dúvidas sobre esta política ou solicitações relacionadas a dados pessoais podem ser enviadas
+      para <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+
+    <h2>Alterações</h2>
+    <p>
+      Mudanças nesta política serão publicadas nesta mesma página, com a data de atualização
+      revisada no topo. O endereço canônico é <code>{SITE.dominio}/privacidade</code>. Veja também os
+      <a href="/termos">termos de uso</a>.
+    </p>
+  </Prose>
+</Base>

@@ -1,0 +1,56 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button
+  type="button"
+  data-tema-toggle
+  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-hairline bg-elevated text-body transition-colors hover:bg-hairline-soft hover:text-ink"
+  aria-label="Alternar tema claro e escuro"
+  aria-pressed="false"
+>
+  <!--
+    Mostramos o ícone do tema que o clique vai ativar: lua no claro, sol no escuro.
+    As classes so-claro/so-escuro moram no global.css — ver a nota lá sobre escopo.
+  -->
+  <Icon nome="lua" class="h-4 w-4 so-claro" />
+  <Icon nome="sol" class="h-4 w-4 so-escuro" />
+</button>
+
+<script>
+  // O cabeçalho monta um botão para mobile e outro para desktop, então são vários.
+  const botoes = [...document.querySelectorAll<HTMLButtonElement>('[data-tema-toggle]')];
+
+  if (botoes.length) {
+    const raiz = document.documentElement;
+    const consultaEscuro = matchMedia('(prefers-color-scheme: dark)');
+
+    const escuroAtivo = () =>
+      raiz.dataset.theme ? raiz.dataset.theme === 'dark' : consultaEscuro.matches;
+
+    const sincronizar = () => {
+      const estado = String(escuroAtivo());
+      botoes.forEach((b) => b.setAttribute('aria-pressed', estado));
+    };
+
+    botoes.forEach((botao) =>
+      botao.addEventListener('click', () => {
+        const proximo = escuroAtivo() ? 'light' : 'dark';
+        raiz.dataset.theme = proximo;
+        try {
+          localStorage.setItem('tema', proximo);
+        } catch {
+          // Modo privado ou storage bloqueado: o tema vale só nesta aba.
+        }
+        sincronizar();
+      }),
+    );
+
+    // Sem escolha salva, os botões continuam espelhando a preferência do sistema.
+    consultaEscuro.addEventListener('change', () => {
+      if (!raiz.dataset.theme) sincronizar();
+    });
+
+    sincronizar();
+  }
+</script>

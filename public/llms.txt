@@ -1,0 +1,25 @@
+# Gerador de CPF Aleatório
+
+> Gerador de CPF aleatório e válido: gere, valide e formate CPFs para testes de software. Grátis, sem cadastro e sem enviar nada para servidor. Todo o cálculo roda no navegador.
+
+## Ferramentas
+
+- [Gerador de CPF](https://cpfaleatorio.com/): gera CPFs aleatórios e válidos pelo algoritmo do módulo 11
+- [Validador de CPF](https://cpfaleatorio.com/validador-de-cpf): verifica se um CPF é válido e explica o motivo do erro quando não for
+- [Formatador de CPF](https://cpfaleatorio.com/formatador-de-cpf): adiciona ou remove a pontuação de um CPF ou de uma lista de CPFs
+
+## Aprenda
+
+- [Como validar um CPF](https://cpfaleatorio.com/como-validar-cpf): o algoritmo do módulo 11 explicado passo a passo, com exemplo resolvido
+- [O que é o CPF](https://cpfaleatorio.com/o-que-e-cpf): estrutura dos 11 dígitos e tabela completa de regiões fiscais por estado
+- [Perguntas frequentes](https://cpfaleatorio.com/perguntas-frequentes): legalidade do uso de CPFs gerados, consulta na Receita, dúvidas comuns
+
+## Código
+
+- [Validar CPF em código](https://cpfaleatorio.com/codigo): implementação de validação e geração em JavaScript, TypeScript, Python, PHP, Java e C#
+
+## Site
+
+- [Sobre](https://cpfaleatorio.com/sobre)
+- [Privacidade](https://cpfaleatorio.com/privacidade)
+- [Termos de uso](https://cpfaleatorio.com/termos)

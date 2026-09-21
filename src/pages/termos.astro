@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'Termos de Uso';
+const descricao =
+  'Condições de uso do gerador de CPF: finalidade de teste, usos proibidos, propriedade intelectual, foro aplicável e ausência de garantias.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/termos'));
+
+const schema = {
+  '@type': 'WebPage',
+  '@id': `${SITE.url}/termos#pagina`,
+  name: titulo,
+  description: descricao,
+  inLanguage: SITE.idioma,
+  url: `${SITE.url}/termos`,
+  dateModified: atualizadoEm('/termos'),
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Termos de uso">
+  <Cabecalho eyebrow="Legal" titulo="Termos de Uso" />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <p>
+      Ao acessar ou usar o <strong>{SITE.nome}</strong> ({SITE.dominio}) você concorda com as
+      condições abaixo. Se não concordar, o único remédio é não usar o site: não há cadastro para
+      cancelar nem contrato para rescindir.
+    </p>
+
+    <h2>1. Finalidade</h2>
+    <p>
+      Este site é uma ferramenta de <strong>dados de teste para desenvolvimento de software</strong>.
+      Ele produz números que satisfazem a regra de formação do CPF, destinados a testes,
+      homologação, demonstrações e material didático. Não é, e não se propõe a ser, um serviço de
+      identificação, verificação de identidade ou consulta cadastral.
+    </p>
+
+    <h2>2. Usos proibidos</h2>
+    <p>É vedado utilizar os números gerados para:</p>
+    <ul>
+      <li>Identificar-se como outra pessoa, real ou inventada, perante qualquer instituição;</li>
+      <li>Preencher cadastro, contrato ou documento oficial com dado que não seja o seu;</li>
+      <li>Obter crédito, benefício, desconto ou qualquer vantagem indevida;</li>
+      <li>Fraudar sistemas de terceiros ou burlar controles antifraude;</li>
+      <li>Qualquer outra finalidade ilícita.</li>
+    </ul>
+    <p>
+      Essas condutas podem configurar crimes previstos no Código Penal, entre eles falsidade
+      ideológica (art. 299) e estelionato (art. 171). A responsabilidade é integralmente de quem
+      usa, independentemente da origem do número.
+    </p>
+
+    <h2>3. Natureza dos números</h2>
+    <p>
+      Os CPFs gerados são combinações matematicamente válidas produzidas por algoritmo. O site
+      <strong>não consulta</strong> qualquer base da Receita Federal e não tem como saber se um
+      número já foi emitido. Uma coincidência com um CPF real é possível e não cria qualquer
+      vínculo com seu titular, nem qualquer responsabilidade nossa por essa coincidência.
+    </p>
+
+    <h2>4. Propriedade intelectual</h2>
+    <p>
+      O layout, os textos e a implementação do site pertencem ao {SITE.nome}. Os exemplos de código
+      de validação de CPF publicados nas páginas de código podem ser copiados e usados livremente em
+      qualquer projeto, sem necessidade de atribuição. As marcas "CPF" e "Receita Federal" citadas
+      aqui pertencem a seus respectivos titulares e são usadas apenas em sentido descritivo.
+    </p>
+
+    <h2>5. Disponibilidade do serviço</h2>
+    <p>
+      O site é gratuito e não há contrato de nível de serviço. Podemos alterar, suspender ou
+      encerrar qualquer funcionalidade a qualquer momento, sem aviso prévio, sem que isso gere
+      direito a indenização.
+    </p>
+
+    <h2>6. Ausência de garantias</h2>
+    <p>
+      O serviço é fornecido "como está" e "conforme disponível", gratuitamente e sem garantias de
+      qualquer natureza, incluindo disponibilidade, exatidão ou adequação a um fim específico. Não
+      nos responsabilizamos por perdas ou danos, diretos ou indiretos, decorrentes do uso do site ou
+      dos números gerados.
+    </p>
+
+    <h2>7. Sem relação com a Receita Federal</h2>
+    <p>
+      Este site é independente. Não possui vínculo, patrocínio, filiação ou endosso da Receita
+      Federal do Brasil, do gov.br ou de qualquer órgão público.
+    </p>
+
+    <h2>8. Lei aplicável e foro</h2>
+    <p>
+      Estes termos são regidos pela lei brasileira. Eventuais disputas serão submetidas ao foro do
+      domicílio do usuário, conforme o Código de Defesa do Consumidor, quando aplicável, ou ao foro
+      da comarca de São Paulo/SP nos demais casos.
+    </p>
+
+    <h2>9. Contato</h2>
+    <p>
+      Dúvidas sobre estes termos podem ser enviadas para <a href={`mailto:${SITE.email}`}
+        >{SITE.email}</a
+      >.
+    </p>
+
+    <h2>10. Alterações</h2>
+    <p>
+      Estes termos podem ser atualizados a qualquer momento, e a versão vigente é sempre a publicada
+      nesta página, com a data de atualização revisada no topo.
+    </p>
+
+    <p>
+      Veja também a <a href="/privacidade">política de privacidade</a>.
+    </p>
+  </Prose>
+</Base>

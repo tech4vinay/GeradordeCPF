@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import { BTN, BTN_GHOST } from '../lib/ui';
+import { SITE } from '../lib/site';
+---
+
+<Base
+  titulo={`Página não encontrada — ${SITE.nome}`}
+  descricao="O endereço acessado não existe neste site."
+  noindex
+>
+  <div class="mx-auto flex max-w-2xl flex-col items-start px-4 py-28 sm:px-6">
+    <p class="eyebrow mb-3">Erro 404</p>
+    <h1 class="heading-lg text-ink">Esta página não existe</h1>
+    <p class="mt-4 text-base leading-relaxed text-body">
+      O endereço pode ter mudado ou nunca ter existido. As ferramentas continuam onde estavam.
+    </p>
+    <div class="mt-8 flex flex-wrap gap-2">
+      <a href="/" class={BTN}>Ir para o gerador</a>
+      <a href="/validador-de-cpf" class={BTN_GHOST}>Validar um CPF</a>
+    </div>
+  </div>
+</Base>

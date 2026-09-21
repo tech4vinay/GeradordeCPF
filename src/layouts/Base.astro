@@ -1,0 +1,162 @@
+---
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { ORG_ID, SITE, SITE_ID, caminhoCanonico, urlCanonica } from '../lib/site';
+
+interface Props {
+  titulo: string;
+  descricao: string;
+  /** Nós JSON-LD da página. Entram no @graph sitewide, um nó ou vários. */
+  schema?: unknown;
+  /** Rótulo curto da migalha. Sem isso, o título inteiro vira nome do breadcrumb. */
+  migalha?: string;
+  /** Mantém a página fora do índice (usado no 404). */
+  noindex?: boolean;
+}
+
+const { titulo, descricao, schema, migalha, noindex = false } = Astro.props;
+
+const caminho = caminhoCanonico(Astro.url.pathname);
+const canonica = urlCanonica(Astro.url.pathname);
+const ogImage = `${SITE.url}/og.png`;
+
+// Entidade do site, emitida em todas as páginas com @id estável. É o que dá ao Google
+// e às superfícies de IA uma âncora para "quem é este site" — sem isso cada página é
+// um documento solto. As páginas referenciam por @id em vez de repetir o nó.
+const entidades = [
+  {
+    '@type': 'Organization',
+    '@id': ORG_ID,
+    name: SITE.nome,
+    url: `${SITE.url}/`,
+    email: SITE.email,
+    description: SITE.descricao,
+    logo: { '@type': 'ImageObject', url: `${SITE.url}/logo.webp`, width: 70, height: 26 },
+  },
+  {
+    '@type': 'WebSite',
+    '@id': SITE_ID,
+    name: SITE.nome,
+    url: `${SITE.url}/`,
+    inLanguage: SITE.idioma,
+    publisher: { '@id': ORG_ID },
+  },
+];
+
+// Breadcrumb só onde ele significa alguma coisa: nem na home (que é o próprio nível 1),
+// nem em página noindex, que não aparece em SERP nenhuma para exibir migalha.
+const breadcrumb =
+  caminho === '/' || noindex
+    ? null
+    : {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Início', item: `${SITE.url}/` },
+          { '@type': 'ListItem', position: 2, name: migalha ?? titulo, item: canonica },
+        ],
+      };
+
+// Um único bloco JSON-LD por página. O @context vive na raiz do grafo, então os nós que
+// as páginas passam têm o seu removido — senão ele se repetiria dentro do @graph.
+const nosDaPagina = (schema == null ? [] : Array.isArray(schema) ? schema : [schema]).map(
+  (no) => {
+    const { '@context': _contexto, ...resto } = no as Record<string, unknown>;
+    return resto;
+  },
+);
+
+const grafo = {
+  '@context': 'https://schema.org',
+  '@graph': [...entidades, ...(breadcrumb ? [breadcrumb] : []), ...nosDaPagina],
+};
+---
+
+<!doctype html>
+<html lang={SITE.idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{titulo}</title>
+    <meta name="description" content={descricao} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonica} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.nome} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={titulo} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descricao} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="GeradorCPF" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+
+    <Font cssVariable="--font-geist" preload />
+    <Font cssVariable="--font-geist-mono" />
+
+    {/* Síncrono e antes do body: sem isso o tema salvo pisca no primeiro paint. */}
+    <script is:inline>
+      try {
+        var t = localStorage.getItem('tema');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+
+    {/* Google tag (gtag.js): script carregado só depois do load, pra não competir com
+       LCP/TBT no mobile — os 170KB do gtag.js (boa parte não usada na config mínima
+       daqui) custavam ~450ms de trabalho de main thread durante o carregamento inicial. */}
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-RXK8VBMS35');
+
+      function carregarGtag() {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-RXK8VBMS35';
+        document.head.appendChild(s);
+      }
+      if (document.readyState === 'complete') carregarGtag();
+      else window.addEventListener('load', carregarGtag);
+    </script>
+
+    <script type="application/ld+json" set:html={JSON.stringify(grafo)} />
+  </head>
+
+  <body class="min-h-dvh flex flex-col">
+    <a
+      href="#conteudo"
+      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-sm focus:bg-ink focus:px-3 focus:py-2 focus:text-sm focus:text-on-ink"
+    >
+      Pular para o conteúdo
+    </a>
+
+    <Nav caminho={caminho} />
+
+    <main id="conteudo" class="flex-1">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

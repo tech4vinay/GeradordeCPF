@@ -1,0 +1,92 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { NAV, SITE } from '../lib/site';
+
+interface Props {
+  caminho: string;
+}
+const { caminho } = Astro.props;
+
+// Links com # apontam para uma aba da home, não para outra página: nunca recebem
+// aria-current, senão três itens ficariam marcados como "página atual" ao mesmo tempo.
+const ativo = (href: string) =>
+  href.includes('#')
+    ? false
+    : href === '/'
+      ? caminho === '/'
+      : caminho === href || caminho.startsWith(`${href}/`);
+---
+
+<header class="sticky top-0 z-40 border-b border-hairline bg-canvas/85 backdrop-blur-md">
+  <!-- Uma linha só a partir de sm com os links na horizontal; no mobile os links
+       ficam atrás de um menu sanfona (details/summary nativo, sem JS). -->
+  <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:h-14 sm:px-6 sm:py-0">
+    <a
+      href="/"
+      class="flex shrink-0 items-center gap-2 rounded-sm text-sm font-semibold tracking-tight text-ink"
+    >
+      <img src="/logo.webp" width="70" height="26" alt="" class="logo-nav h-5 w-auto shrink-0" />
+      {SITE.nome}
+    </a>
+
+    <nav aria-label="Principal" class="hidden min-w-0 flex-1 sm:block">
+      <ul class="flex items-center justify-end gap-0.5 text-sm">
+        {
+          NAV.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={ativo(item.href) ? 'page' : undefined}
+                class:list={[
+                  'block rounded-full px-3 py-1.5 whitespace-nowrap transition-colors hover:bg-hairline-soft hover:text-ink',
+                  ativo(item.href) ? 'font-medium text-ink' : 'text-body',
+                ]}
+              >
+                {item.rotulo}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-1 sm:hidden">
+      <ThemeToggle />
+      <details class="group relative">
+        <summary
+          class="flex h-9 w-9 list-none items-center justify-center rounded-full text-body transition-colors hover:bg-hairline-soft hover:text-ink [&::-webkit-details-marker]:hidden"
+          aria-label="Abrir menu"
+        >
+          <svg viewBox="0 0 20 20" class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" d="M3 5h14M3 10h14M3 15h14"></path>
+          </svg>
+        </summary>
+        <nav
+          aria-label="Principal"
+          class="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-hairline bg-canvas p-1 shadow-lg"
+        >
+          <ul class="text-sm">
+            {
+              NAV.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={ativo(item.href) ? 'page' : undefined}
+                    class:list={[
+                      'block rounded-sm px-3 py-2 whitespace-nowrap transition-colors hover:bg-hairline-soft hover:text-ink',
+                      ativo(item.href) ? 'font-medium text-ink' : 'text-body',
+                    ]}
+                  >
+                    {item.rotulo}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </details>
+    </div>
+
+    <div class="hidden sm:block"><ThemeToggle /></div>
+  </div>
+</header>

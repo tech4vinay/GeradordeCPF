@@ -1,0 +1,105 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+
+const titulo = 'Perguntas frequentes sobre o gerador de CPF';
+const descricao =
+  'É legal usar um gerador de CPF? Os números pertencem a alguém? Dá para consultar a situação na Receita? As dúvidas mais comuns, respondidas direto.';
+
+// Fonte única: alimenta a página visível e o schema FAQPage.
+//
+// Deliberadamente disjunto do FAQ da home, que cobre as perguntas definicionais e de
+// produto. Aqui ficam legalidade, privacidade, Receita Federal, limites e API — as
+// perguntas que exigem resposta longa. Nenhuma pergunta vive nas duas páginas.
+const FAQ = [
+  {
+    p: 'Para que serve um gerador de CPF?',
+    r: 'Para produzir dados de teste. Quem desenvolve software precisa de números que passem na validação para exercitar formulários, popular banco de dados de homologação, escrever testes automatizados e demonstrar sistemas. Usar CPFs reais nesses ambientes é desnecessário e cria risco de vazamento de dado pessoal.',
+  },
+  {
+    p: 'É legal usar um gerador de CPF?',
+    r: 'Gerar o número é apenas aritmética, e a ferramenta em si é legítima e amplamente usada na indústria de software. O que a lei pune é o uso: apresentar-se com CPF que não é seu, fraudar cadastro, obter vantagem indevida ou tentar se passar por outra pessoa configura crime, entre eles falsidade ideológica (art. 299 do Código Penal) e estelionato (art. 171). A responsabilidade é de quem usa, e ela existe independentemente de onde o número veio.',
+  },
+  {
+    p: 'Os CPFs gerados pertencem a alguém?',
+    r: 'Podem coincidir com um CPF emitido, sim: o gerador só sabe fazer a conta do módulo 11, não tem como consultar quais números já foram atribuídos. Existem cerca de 10 bilhões de combinações válidas, e uma fração delas está em uso. Por isso os números servem para teste e nada mais: trate-os como fictícios, porque para você eles são.',
+  },
+  {
+    p: 'Dá para consultar a situação do CPF na Receita Federal aqui?',
+    r: 'Não, e nenhum site independente consegue. A base cadastral da Receita não é pública. A consulta de situação cadastral só existe nos canais oficiais do gov.br, com os dados do titular. Qualquer site que prometa "consultar CPF" fora disso está mentindo ou coletando seus dados.',
+  },
+  {
+    p: 'O CPF gerado é válido de verdade?',
+    r: 'Ele é matematicamente válido: passa em qualquer validação que implemente o algoritmo do módulo 11 corretamente. Isso é diferente de existir. Um número pode obedecer à regra de formação e nunca ter sido emitido pela Receita.',
+  },
+  {
+    p: 'Como o site escolhe o estado de origem?',
+    r: 'Pelo nono dígito, que codifica a região fiscal de emissão. Como a maioria das regiões agrupa vários estados, escolher "CE" produz o mesmo dígito que "MA" ou "PI". Nosso seletor agrupa as UFs por região justamente para deixar isso visível. A tabela completa está na página sobre o CPF.',
+  },
+  {
+    p: 'Meus dados são enviados para algum servidor?',
+    r: 'Não. Geração, validação e formatação acontecem inteiramente no seu navegador, em JavaScript. Nenhum CPF digitado ou gerado sai da sua máquina, e o site não tem servidor de aplicação para onde enviar. Depois de carregada, a página funciona sem internet.',
+  },
+  {
+    p: 'Quantos CPFs posso gerar de uma vez?',
+    r: 'Até 1000 por lote, e os números de um mesmo lote nunca se repetem. Dá para copiar todos de uma vez ou baixar em .txt, .csv ou .json.',
+  },
+  {
+    p: 'Por que 111.111.111-11 é rejeitado se ele passa no cálculo?',
+    r: 'Porque sequências de dígitos iguais passam mesmo no módulo 11: é uma peculiaridade do algoritmo. Como são exatamente o que alguém digita ao testar um formulário, a convenção universal é rejeitá-las por uma regra separada. Todo validador sério faz isso, e o nosso também.',
+  },
+  {
+    p: 'Posso usar o CPF gerado para me cadastrar em algum site?',
+    r: 'Não é essa a finalidade da ferramenta, e sites de cadastro real devem receber o CPF verdadeiro do titular. Usar um número gerado aqui para se passar por outra pessoa ou burlar um cadastro pode configurar crime, como falsidade ideológica. O uso pretendido é desenvolvimento e QA: bancos de teste, formulários de homologação, testes automatizados.',
+  },
+  {
+    p: 'Existe uma API?',
+    r: 'Não há endpoint HTTP, porque o site não tem servidor. Mas a configuração do gerador vive na URL: /?uf=SP&qtd=50&pontuacao=0 abre a página já com 50 CPFs paulistas sem pontuação. Para gerar dentro do seu próprio código, as implementações prontas em várias linguagens estão nas páginas de código.',
+  },
+];
+
+const schema = {
+  '@type': 'FAQPage',
+  '@id': `${SITE.url}/perguntas-frequentes#faq`,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/perguntas-frequentes`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/perguntas-frequentes'),
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.p,
+    acceptedAnswer: { '@type': 'Answer', text: item.r },
+  })),
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema}>
+  <Cabecalho
+    eyebrow="FAQ"
+    titulo="Perguntas frequentes"
+    lead="Respostas diretas, incluindo as perguntas incômodas sobre legalidade e privacidade."
+  />
+
+  <div class="mx-auto max-w-2xl px-4 py-14 sm:px-6">
+    <dl class="divide-y divide-hairline border-y border-hairline">
+      {
+        FAQ.map((item) => (
+          <div class="py-6">
+            <dt class="heading-md text-ink">{item.p}</dt>
+            <dd class="mt-2.5 leading-relaxed text-body">{item.r}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="mt-10 text-sm text-body">
+      Ficou algo de fora? Veja <a class="text-link underline underline-offset-2" href="/o-que-e-cpf"
+        >o que é o CPF</a
+      > ou <a class="text-link underline underline-offset-2" href="/como-validar-cpf"
+        >como validar um CPF</a
+      >.
+    </p>
+  </div>
+</Base>

@@ -1,0 +1,32 @@
+---
+/**
+ * Ícones inline, 16x16, herdando currentColor.
+ * Decorativos por padrão — o rótulo vem do texto do botão.
+ */
+interface Props {
+  nome: 'copiar' | 'sol' | 'lua' | 'atualizar';
+  class?: string;
+}
+const { nome, class: classe = 'h-4 w-4' } = Astro.props;
+
+const paths: Record<Props['nome'], string> = {
+  copiar:
+    '<rect x="5.5" y="5.5" width="8" height="8" rx="1.75"/><path d="M10.5 5.5v-1a1.75 1.75 0 0 0-1.75-1.75h-4.5A1.75 1.75 0 0 0 2.5 4.5v4.5c0 .97.78 1.75 1.75 1.75h1"/>',
+  sol: '<circle cx="8" cy="8" r="3.25"/><path d="M8 1v1.5M8 13.5V15M15 8h-1.5M2.5 8H1m11-4-1 1M5 11l-1 1m8 0-1-1M5 5 4 4"/>',
+  lua: '<path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.75 5.75 0 1 0 7.1 7.1Z"/>',
+  atualizar:
+    '<path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3"/>',
+};
+---
+
+<svg
+  viewBox="0 0 16 16"
+  class={classe}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.4"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={paths[nome]}
+/>

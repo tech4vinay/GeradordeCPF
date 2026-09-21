@@ -1,0 +1,118 @@
+---
+import CodeBlock from './CodeBlock.astro';
+import { SNIPPETS } from '../lib/snippets';
+
+/**
+ * Uma aba por linguagem, mesmo padrão de Ferramentas.astro: cada uma mantém seu
+ * conteúdo completo sem recarregar a página, e a aba ativa fica no hash da URL
+ * (/codigo#python) para que o link seja compartilhável.
+ */
+---
+
+<div data-abas-codigo>
+  <div
+    role="tablist"
+    aria-label="Linguagem"
+    class="mb-4 inline-flex flex-wrap gap-1 rounded-sm border border-hairline bg-elevated p-1"
+  >
+    {
+      SNIPPETS.map((s, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`aba-${s.slug}`}
+          aria-controls={`painel-${s.slug}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          data-aba={s.slug}
+          class="rounded-[4px] px-3.5 py-1.5 text-sm font-medium text-body transition-colors hover:text-ink aria-selected:bg-ink aria-selected:text-on-ink"
+        >
+          {s.nome}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    SNIPPETS.map((s, i) => (
+      <div
+        role="tabpanel"
+        id={`painel-${s.slug}`}
+        aria-labelledby={`aba-${s.slug}`}
+        tabindex={0}
+        data-painel={s.slug}
+        hidden={i !== 0}
+      >
+        {s.nota && <p class="mb-4 text-sm leading-relaxed text-body">{s.nota}</p>}
+
+        <h3 class="heading-md text-ink">Validação</h3>
+        <CodeBlock codigo={s.validar} arquivo={s.arquivo} />
+
+        <h3 class="heading-md mt-6 text-ink">Geração</h3>
+        <CodeBlock codigo={s.gerar} arquivo={s.arquivo} />
+
+        <h3 class="heading-md mt-6 text-ink">Uso</h3>
+        <CodeBlock codigo={s.uso} arquivo="exemplo" />
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  const raiz = document.querySelector<HTMLElement>('[data-abas-codigo]');
+
+  if (raiz) {
+    const abas = [...raiz.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const paineis = [...raiz.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+
+    function ativar(id: string, moverFoco = false) {
+      abas.forEach((aba) => {
+        const ativa = aba.dataset.aba === id;
+        aba.setAttribute('aria-selected', String(ativa));
+        aba.tabIndex = ativa ? 0 : -1;
+        if (ativa && moverFoco) aba.focus();
+      });
+      paineis.forEach((p) => (p.hidden = p.dataset.painel !== id));
+    }
+
+    raiz.addEventListener('click', (e) => {
+      const aba = (e.target as HTMLElement).closest<HTMLButtonElement>('[role="tab"]');
+      if (!aba) return;
+      const id = aba.dataset.aba!;
+      ativar(id);
+      history.replaceState(null, '', `${location.pathname}${location.search}#${id}`);
+    });
+
+    raiz.addEventListener('keydown', (e) => {
+      const atual = abas.findIndex((a) => a === document.activeElement);
+      if (atual === -1) return;
+
+      const destino =
+        e.key === 'ArrowRight'
+          ? (atual + 1) % abas.length
+          : e.key === 'ArrowLeft'
+            ? (atual - 1 + abas.length) % abas.length
+            : e.key === 'Home'
+              ? 0
+              : e.key === 'End'
+                ? abas.length - 1
+                : -1;
+
+      if (destino === -1) return;
+      e.preventDefault();
+      ativar(abas[destino].dataset.aba!, true);
+    });
+
+    const abrirPeloHash = () => {
+      const id = location.hash.slice(1);
+      if (!abas.some((a) => a.dataset.aba === id)) return;
+      ativar(id);
+      // O hash é #python, não #aba-python nem #painel-python — não bate com nenhum id
+      // real, então o navegador não rola sozinho até aqui.
+      raiz.scrollIntoView({ block: 'start' });
+    };
+
+    addEventListener('hashchange', abrirPeloHash);
+    abrirPeloHash();
+  }
+</script>

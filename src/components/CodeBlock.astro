@@ -1,0 +1,39 @@
+---
+interface Props {
+  codigo: string;
+  arquivo?: string;
+}
+const { codigo, arquivo } = Astro.props;
+---
+
+<figure class="my-5 overflow-hidden rounded-md border border-hairline bg-elevated">
+  <figcaption
+    class="flex items-center gap-3 border-b border-hairline px-4 py-2 font-mono text-xs text-mute"
+  >
+    <span>{arquivo}</span>
+    <button
+      type="button"
+      class="ml-auto rounded-sm border border-hairline px-2 py-1 font-sans text-xs font-medium text-body transition-colors hover:bg-hairline-soft hover:text-ink"
+      data-copiar-codigo
+    >
+      Copiar
+    </button>
+  </figcaption>
+  <pre
+    class="overflow-x-auto p-4 font-mono text-[13px] leading-relaxed text-ink"><code>{codigo}</code></pre>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copiar-codigo]').forEach((botao) => {
+    botao.addEventListener('click', async () => {
+      const codigo = botao.closest('figure')?.querySelector('code')?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(codigo);
+        botao.textContent = 'Copiado';
+      } catch {
+        botao.textContent = 'Falhou';
+      }
+      setTimeout(() => (botao.textContent = 'Copiar'), 1400);
+    });
+  });
+</script>

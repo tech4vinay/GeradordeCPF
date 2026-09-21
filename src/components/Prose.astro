@@ -1,0 +1,21 @@
+---
+// Tipografia de conteúdo, escrita à mão em vez de puxar @tailwindcss/typography:
+// são cinco seletores e evita uma dependência inteira.
+---
+
+<div
+  class="mx-auto max-w-2xl px-4 py-14 text-base leading-relaxed text-body sm:px-6
+         [&_h2]:heading-lg [&_h2]:mt-14 [&_h2]:mb-4 [&_h2]:first:mt-0
+         [&_h3]:heading-md [&_h3]:mt-9 [&_h3]:mb-3
+         [&_p]:my-4
+         [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5
+         [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-5
+         [&_a]:text-link [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-link-deep
+         [&_strong]:font-medium [&_strong]:text-ink
+         [&_code]:rounded-[4px] [&_code]:border [&_code]:border-hairline [&_code]:bg-hairline-soft [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-ink
+         [&_table]:my-6 [&_table]:w-full [&_table]:text-left [&_table]:text-sm
+         [&_th]:border-b [&_th]:border-hairline [&_th]:py-2 [&_th]:pr-4 [&_th]:font-medium [&_th]:text-ink
+         [&_td]:border-b [&_td]:border-hairline [&_td]:py-2 [&_td]:pr-4"
+>
+  <slot />
+</div>

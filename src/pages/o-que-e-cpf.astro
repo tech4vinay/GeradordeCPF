@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { REGIOES, UF_NOMES } from '../lib/cpf';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+
+const titulo = 'O que é o CPF e o que cada dígito significa';
+const descricao =
+  'A estrutura do CPF: os oito dígitos de série, o dígito da região fiscal e os dois verificadores. Com a tabela completa de regiões por estado.';
+
+// A tabela de regiões fiscais é o ativo mais citável do site — é a correção que quase
+// todo concorrente apresenta errado. Sem schema próprio ela era a única página de
+// conteúdo invisível como entidade.
+const schema = {
+  '@type': 'Article',
+  '@id': `${SITE.url}/o-que-e-cpf#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/o-que-e-cpf`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/o-que-e-cpf'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+  mentions: REGIOES.map((r) => ({
+    '@type': 'AdministrativeArea',
+    name: r.nome,
+    identifier: String(r.digito),
+  })),
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="O que é o CPF">
+  <Cabecalho
+    eyebrow="Referência"
+    titulo="O que é o CPF"
+    lead="Cadastro de Pessoas Físicas: o número de 11 dígitos que a Receita Federal usa para identificar contribuintes. Cada parte dele carrega uma informação."
+  />
+
+  <Prose>
+    <h2>Para que serve</h2>
+    <p>
+      O CPF identifica uma pessoa física perante a Receita Federal. Na prática ele virou o
+      identificador civil de uso mais amplo no Brasil: abrir conta em banco, assinar contrato de
+      trabalho, comprar a prazo, emitir nota fiscal e acessar serviços públicos passam por ele.
+    </p>
+    <p>
+      Cada pessoa tem um único CPF, e ele acompanha a pessoa para o resto da vida: não muda com
+      mudança de estado, de nome ou de estado civil.
+    </p>
+
+    <h2>Anatomia dos 11 dígitos</h2>
+    <p>Tomando um CPF genérico no formato <code>ABC.DEF.GHI-JK</code>:</p>
+    <ul>
+      <li>
+        <strong>A até H</strong> (8 dígitos): número de série, atribuído sequencialmente dentro
+        da região.
+      </li>
+      <li>
+        <strong>I</strong> (9º dígito): a região fiscal onde o CPF foi emitido.
+      </li>
+      <li>
+        <strong>J e K</strong> (10º e 11º): dígitos verificadores, calculados a partir dos nove
+        anteriores pelo <a href="/como-validar-cpf">módulo 11</a>.
+      </li>
+    </ul>
+
+    <h2 id="regiao">O 9º dígito é a região, não o estado</h2>
+    <p>
+      Este é o ponto que quase todo gerador na internet apresenta errado. O nono dígito não
+      identifica um <strong>estado</strong>; ele identifica uma das <strong>dez regiões
+      fiscais</strong> da Receita Federal, e a maioria delas reúne vários estados.
+    </p>
+    <p>
+      A consequência prática: por um CPF você consegue saber que ele foi emitido na 3ª Região
+      Fiscal, mas <strong>não</strong> se foi no Ceará, no Maranhão ou no Piauí. Os três
+      compartilham o dígito <code>3</code>. Só três regiões permitem identificar o estado sem
+      ambiguidade, porque só têm um estado cada: São Paulo (<code>8</code>), Minas Gerais
+      (<code>6</code>) e Rio Grande do Sul (<code>0</code>).
+    </p>
+    <p>
+      Vale dizer também que a região é a de <strong>emissão</strong>, não a de residência. Quem
+      tirou o CPF em São Paulo e mudou para Recife continua com o dígito <code>8</code>.
+    </p>
+
+    <h2>Tabela de regiões fiscais</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">9º dígito</th>
+          <th scope="col">Região</th>
+          <th scope="col">Estados</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          REGIOES.map((r) => (
+            <tr>
+              <td class="font-mono text-ink">{r.digito}</td>
+              <td>{r.nome}</td>
+              <td>{r.ufs.map((uf) => `${uf} (${UF_NOMES[uf]})`).join(', ')}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+
+    <h2>CPF e CNPJ</h2>
+    <p>
+      São cadastros diferentes. O CPF, de 11 dígitos, identifica <strong>pessoas físicas</strong>.
+      O CNPJ, de 14, identifica <strong>pessoas jurídicas</strong> (empresas, associações e
+      órgãos). Os dois usam módulo 11 para os dígitos verificadores, mas com pesos e estrutura
+      distintos, então uma função de validação não serve para o outro.
+    </p>
+
+    <h2>Continue</h2>
+    <p>
+      <a href="/como-validar-cpf">O algoritmo passo a passo</a> ·
+      <a href="/">gerar CPFs para teste</a> ·
+      <a href="/perguntas-frequentes">perguntas frequentes</a>
+    </p>
+  </Prose>
+</Base>

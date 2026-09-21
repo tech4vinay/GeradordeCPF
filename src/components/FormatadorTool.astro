@@ -1,0 +1,88 @@
+---
+import { BTN, BTN_GHOST, CARD, HINT, LABEL } from '../lib/ui';
+---
+
+<section class={CARD} data-formatador>
+  <div class="grid gap-5 p-5 sm:p-6 md:grid-cols-2">
+    <div>
+      <label class={LABEL} for="f-entrada">Entrada</label>
+      <textarea
+        id="f-entrada"
+        rows="8"
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="11144477735&#10;123.456.789-09&#10;…"
+        class="w-full rounded-sm border border-hairline bg-elevated p-3 font-mono text-sm tabular-nums text-ink placeholder:text-faint"
+      ></textarea>
+      <p class={HINT}>Um CPF por linha. Aceita qualquer mistura de pontuado e não pontuado.</p>
+    </div>
+
+    <div>
+      <label class={LABEL} for="f-saida">Saída</label>
+      <textarea
+        id="f-saida"
+        rows="8"
+        readonly
+        spellcheck="false"
+        class="w-full rounded-sm border border-hairline bg-hairline-soft p-3 font-mono text-sm tabular-nums text-ink"
+      ></textarea>
+      <p class={HINT} data-aviso></p>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2 border-t border-hairline px-5 py-4 sm:px-6">
+    <button type="button" class={BTN} data-acao="pontuar">Adicionar pontuação</button>
+    <button type="button" class={BTN_GHOST} data-acao="despontuar">Remover pontuação</button>
+    <button type="button" class={BTN_GHOST} data-acao="copiar">Copiar saída</button>
+  </div>
+</section>
+
+<p class="sr-only" role="status" aria-live="polite" data-anuncio-fmt></p>
+
+<script>
+  import { formatar, limpar, validar } from '../lib/cpf';
+
+  const raiz = document.querySelector<HTMLElement>('[data-formatador]');
+  if (raiz) {
+    const $entrada = raiz.querySelector<HTMLTextAreaElement>('#f-entrada')!;
+    const $saida = raiz.querySelector<HTMLTextAreaElement>('#f-saida')!;
+    const $aviso = raiz.querySelector<HTMLElement>('[data-aviso]')!;
+    const $anuncio = document.querySelector<HTMLElement>('[data-anuncio-fmt]')!;
+
+    function converter(modo: 'pontuar' | 'despontuar') {
+      const linhas = $entrada.value
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      $saida.value = linhas
+        .map((l) => {
+          const d = limpar(l);
+          // Fora dos 11 dígitos não há o que formatar — devolvemos a linha original.
+          if (d.length !== 11) return l;
+          return modo === 'pontuar' ? formatar(d) : d;
+        })
+        .join('\n');
+
+      const invalidos = linhas.filter((l) => !validar(l).valido).length;
+      $aviso.textContent = invalidos
+        ? `${linhas.length} linha(s) convertida(s). ${invalidos} não passa(m) na validação: a formatação não corrige dígitos verificadores.`
+        : `${linhas.length} linha(s) convertida(s).`;
+      $anuncio.textContent = $aviso.textContent;
+    }
+
+    raiz.addEventListener('click', async (e) => {
+      const acao = (e.target as HTMLElement).closest<HTMLElement>('[data-acao]')?.dataset.acao;
+      if (acao === 'pontuar' || acao === 'despontuar') {
+        converter(acao);
+      } else if (acao === 'copiar') {
+        try {
+          await navigator.clipboard.writeText($saida.value);
+          $anuncio.textContent = 'Saída copiada.';
+        } catch {
+          $anuncio.textContent = 'Não foi possível copiar. Selecione o texto e use Ctrl+C.';
+        }
+      }
+    });
+  }
+</script>

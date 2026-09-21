@@ -1,0 +1,111 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = `Sobre o ${SITE.nome}`;
+const descricao =
+  'O que este site é, como o algoritmo do módulo 11 funciona por dentro, por que tudo roda no navegador sem enviar nada ao servidor, e quem mantém o projeto.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/sobre'));
+
+const schema = {
+  '@type': 'AboutPage',
+  '@id': `${SITE.url}/sobre#pagina`,
+  name: titulo,
+  description: descricao,
+  inLanguage: SITE.idioma,
+  url: `${SITE.url}/sobre`,
+  dateModified: atualizadoEm('/sobre'),
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  mainEntity: { '@id': `${SITE.url}/#gerador` },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Sobre">
+  <Cabecalho eyebrow="Sobre" titulo="Sobre este site" />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <p>
+      O <strong>{SITE.nome}</strong> é uma ferramenta de dados de teste para quem constrói
+      software. Ele gera, valida e formata números de CPF matematicamente válidos, para uso em
+      desenvolvimento, homologação e testes automatizados, nunca para representar uma pessoa real.
+    </p>
+
+    <h2>Como funciona</h2>
+    <p>
+      O site é estático, construído com <a href="https://astro.build" rel="noopener">Astro</a>.
+      Todo o cálculo (geração, validação, formatação e a memória de cálculo do módulo 11)
+      acontece no seu navegador, em JavaScript. Não existe servidor de aplicação, não existe banco
+      de dados e nenhum número digitado ou gerado sai da sua máquina. Detalhes de coleta de dados
+      estão na <a href="/privacidade">política de privacidade</a>.
+    </p>
+    <p>
+      A consequência agradável é que a página continua funcionando offline depois de carregada, e
+      carrega numa fração do tempo de um gerador que precisa ir e voltar do servidor a cada clique.
+    </p>
+
+    <h2>Precisão do algoritmo</h2>
+    <p>
+      A lógica de geração e validação (módulo 11, tratamento dos casos de resto 0 e 1, rejeição de
+      sequências de dígitos repetidos e o mapeamento de região fiscal) vive num único módulo
+      TypeScript, coberto por testes automatizados a 100% de linhas e branches. Tanto a
+      <a href="/como-validar-cpf">página do algoritmo</a> quanto o gerador e o validador importam
+      exatamente o mesmo código: não existe uma versão "de exibição" divergente da que realmente
+      roda. Se você encontrar uma divergência, ela é um bug e vale reportar: a exatidão é o ponto
+      inteiro deste site.
+    </p>
+    <p>
+      Existem cerca de 10 bilhões de combinações de CPF matematicamente válidas. O gerador nunca
+      repete um número dentro do mesmo lote, mas não tem como saber, nem ninguém fora da Receita
+      Federal tem, quais dessas combinações já foram emitidas.
+    </p>
+
+    <h2>O que fizemos diferente</h2>
+    <ul>
+      <li>
+        <strong>Região fiscal, não estado.</strong> O 9º dígito codifica uma das dez regiões
+        fiscais da Receita, e a maioria agrupa vários estados. Preferimos explicar isso a repetir a
+        simplificação incorreta que virou padrão no setor: veja a <a href="/o-que-e-cpf#regiao"
+          >tabela completa</a
+        >.
+      </li>
+      <li>
+        <strong>O erro tem nome.</strong> Quando um CPF não passa, o validador diz qual regra
+        falhou e quais seriam os dígitos verificadores corretos.
+      </li>
+      <li>
+        <strong>A conta fica à vista.</strong> Cada CPF gerado vem com a memória de cálculo dos
+        dois dígitos verificadores.
+      </li>
+      <li>
+        <strong>Lotes de verdade.</strong> Até 1000 números por vez, sem repetição, com download em
+        .txt, .csv e .json.
+      </li>
+      <li>
+        <strong>Código de referência em {LINGUAGENS.length} linguagens.</strong> Implementações comentadas
+        do validador em {LINGUAGENS.map((l) => l.nome).join(', ')}, para quem quer o algoritmo dentro
+        do próprio projeto em vez de depender deste site.
+      </li>
+    </ul>
+
+    <h2>Uso responsável</h2>
+    <p>
+      Os números aqui existem para testar sistemas. Usá-los para se passar por outra pessoa,
+      fraudar cadastro ou obter qualquer vantagem indevida é crime, e a responsabilidade é de quem
+      usa. Os <a href="/termos">termos de uso</a> tratam disso em detalhe, e as
+      <a href="/perguntas-frequentes">perguntas frequentes</a> respondem as dúvidas mais comuns
+      sobre legalidade e propriedade dos números.
+    </p>
+
+    <h2>Contato</h2>
+    <p>
+      Encontrou um bug no algoritmo, um dado incorreto ou tem sugestão? Escreva para
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+  </Prose>
+</Base>

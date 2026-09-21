@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import CodigoTabs from '../components/CodigoTabs.astro';
+import Prose from '../components/Prose.astro';
+import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+
+const titulo = 'Como validar CPF em código (JavaScript, Python, PHP, Java, C#, TypeScript)';
+const descricao =
+  'Função de validação e geração de CPF pronta em seis linguagens, com o algoritmo do módulo 11, tratamento de dígitos repetidos e do resto menor que 2.';
+
+const nomes = LINGUAGENS.map((l) => l.nome).join(', ');
+
+const schema = {
+  '@type': 'TechArticle',
+  '@id': `${SITE.url}/codigo#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/codigo`,
+  proficiencyLevel: 'Beginner',
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/codigo'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Código pronto">
+  <Cabecalho
+    eyebrow="Código"
+    titulo="Validar e gerar CPF em código"
+    lead={`A mesma função de validação (11 dígitos, sem sequência repetida, dois dígitos verificadores pelo módulo 11) pronta em ${nomes}.`}
+  />
+
+  <Prose>
+    <CodigoTabs />
+
+    <h2>Os dois pontos em que essas funções costumam quebrar</h2>
+    <p>
+      Toda implementação de CPF erra nos mesmos dois lugares, e as duas armadilhas estão tratadas
+      no código acima:
+    </p>
+    <ul>
+      <li>
+        <strong>Resto 0 ou 1.</strong> Quando o resto da divisão por 11 é menor que 2, o dígito
+        verificador é <code>0</code>, e não <code>11 - resto</code>, que daria 10 ou 11. Pular essa
+        regra faz o validador rejeitar cerca de um terço dos CPFs legítimos.
+      </li>
+      <li>
+        <strong>Dígitos repetidos.</strong> <code>111.111.111-11</code> e as outras nove sequências
+        iguais <em>passam</em> na conta do módulo 11. Como são exatamente o que se digita para testar
+        um formulário, precisam de uma verificação à parte.
+      </li>
+    </ul>
+    <p>
+      A explicação completa da aritmética, com exemplo resolvido dígito a dígito, está em
+      <a href="/como-validar-cpf">como validar um CPF</a>.
+    </p>
+
+    <h2>Números para testar</h2>
+    <p>
+      Para exercitar a função com dados de verdade, o <a href="/">gerador</a> produz até 1000 CPFs
+      válidos por vez e exporta em <code>.txt</code>, <code>.csv</code> ou <code>.json</code>,
+      pronto para virar fixture do seu conjunto de testes.
+    </p>
+    <p>
+      Casos que vale incluir na suíte: <code>111.444.777-35</code> (válido),
+      <code>111.111.111-11</code> (repetido, deve falhar), <code>123</code> (curto demais) e uma
+      string vazia.
+    </p>
+  </Prose>
+</Base>

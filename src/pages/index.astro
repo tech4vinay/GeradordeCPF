@@ -1,0 +1,308 @@
+---
+import Base from '../layouts/Base.astro';
+import GeradorTool from '../components/GeradorTool.astro';
+import Prose from '../components/Prose.astro';
+import { CARD } from '../lib/ui';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'Gerador de CPF Aleatório e Válido — Online e Grátis';
+const descricao =
+  'Gerador de CPF aleatório e válido online: gere, valide e formate CPFs para testes de software. Grátis, sem cadastro e sem enviar dados para servidor.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/'));
+
+const appSchema = {
+  '@type': 'WebApplication',
+  '@id': `${SITE.url}/#gerador`,
+  name: 'Gerador de CPF Aleatório',
+  alternateName: ['Gerador de CPF', 'Gerador de CPF Válido', 'Gerador de CPF Online'],
+  url: `${SITE.url}/`,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  browserRequirements: 'Requer JavaScript',
+  inLanguage: 'pt-BR',
+  description: descricao,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/'),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+  featureList: [
+    'Geração de 1 a 1000 CPFs por vez',
+    'Seleção da região fiscal de origem',
+    'CPF com ou sem pontuação',
+    'Validação com explicação do erro',
+    'Formatação em lote',
+    'Exportação em TXT, CSV e JSON',
+  ],
+};
+
+// Este conjunto é deliberadamente disjunto do de /perguntas-frequentes: aqui ficam as
+// perguntas definicionais e sobre o produto; lá, as de legalidade, privacidade, limites
+// e API. Repetir pergunta nas duas páginas faz uma competir com a outra.
+const FAQ = [
+  {
+    p: 'O que é um gerador de CPF?',
+    r: 'É uma ferramenta que produz números de CPF matematicamente válidos (números que passam no cálculo dos dois dígitos verificadores pelo algoritmo do módulo 11) sem consultar nenhuma base de dados real. Serve para gerar dados de teste, não para obter o documento de alguém.',
+  },
+  {
+    p: 'O gerador de CPF é realmente aleatório?',
+    r: 'Sim. Os oito dígitos de série são sorteados a cada geração e os dois verificadores são calculados a partir deles pelo módulo 11. Nenhum número vem de lista pronta e nenhum lote repete um número. O nono dígito é o único que você controla, porque é ele que codifica a região fiscal de emissão. Aleatório e válido ao mesmo tempo: é essa a combinação que um gerador de CPF aleatório precisa entregar.',
+  },
+  {
+    p: 'O que significa CPF?',
+    r: 'CPF é a sigla de Cadastro de Pessoas Físicas, o registro da Receita Federal que identifica cada contribuinte no Brasil. O número tem 11 dígitos: oito de série, um de região fiscal e dois verificadores, calculados pelo algoritmo do módulo 11.',
+  },
+  {
+    p: 'Quantos dígitos tem um CPF?',
+    r: 'Onze. Os oito primeiros formam o número de inscrição, o nono indica a região fiscal em que o CPF foi emitido e os dois últimos são dígitos verificadores, calculados a partir dos nove anteriores pelo algoritmo do módulo 11.',
+  },
+  {
+    p: 'Qual a diferença entre CPF e CNPJ?',
+    r: 'CPF identifica pessoas físicas e tem 11 dígitos; CNPJ identifica pessoas jurídicas (empresas) e tem 14. Os dois usam a mesma lógica de dígito verificador pelo módulo 11, mas com pesos e quantidade de dígitos diferentes, então um número de CPF nunca é confundido com um de CNPJ.',
+  },
+  {
+    p: 'Como validar um CPF?',
+    r: 'Aplicando duas vezes o cálculo do módulo 11 sobre os nove primeiros dígitos, com pesos crescentes para cada dígito verificador, e comparando o resultado com os dois últimos dígitos informados. Se algum não bater, o CPF é inválido. O validador desta página faz essa conta automaticamente e aponta qual dígito falhou.',
+  },
+  {
+    p: 'Este gerador de CPF funciona de verdade?',
+    r: 'Funciona no sentido que importa para teste de software: todo número gerado aqui passa em qualquer validação que implemente corretamente o módulo 11, porque o cálculo é feito de verdade, dígito a dígito, e não sorteado pela aparência. O que ele não faz (porque nenhum gerador legítimo faz) é produzir um CPF que exista na Receita Federal.',
+  },
+  {
+    p: 'Existe gerador de CPF com nome?',
+    r: 'Quem procura um gerador de CPF com nome quase sempre quer massa de teste completa: um nome fictício ao lado de um número que se comporte como CPF de verdade. Este gerador entrega a parte que é difícil de acertar: o número que passa no módulo 11 e carrega uma região fiscal coerente. O nome não entra no cálculo de validade, então qualquer texto serve: combine com um nome fictício e o par fica pronto para popular a tabela de teste.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  '@id': `${SITE.url}/#faq`,
+  inLanguage: 'pt-BR',
+  isPartOf: { '@id': SITE_ID },
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.p,
+    acceptedAnswer: { '@type': 'Answer', text: item.r },
+  })),
+};
+
+const diferenciais = [
+  {
+    titulo: 'Até 1000 de uma vez',
+    texto:
+      'Gere lotes inteiros e baixe em .txt, .csv ou .json. Popular uma tabela de teste deixa de ser trabalho manual.',
+  },
+  {
+    titulo: 'Região fiscal correta',
+    texto:
+      'O 9º dígito codifica a região fiscal, não o estado. O seletor agrupa as 27 UFs pela região que elas realmente compartilham.',
+  },
+  {
+    titulo: 'A conta na tela',
+    texto:
+      'O painel de cálculo mostra pesos, produtos, soma e resto do módulo 11 para cada dígito verificador.',
+  },
+  {
+    titulo: 'O erro tem nome',
+    texto:
+      'Quando um CPF não passa, dizemos qual regra falhou e quais seriam os dígitos verificadores corretos.',
+  },
+  {
+    titulo: 'Nada sai do navegador',
+    texto:
+      'Sem requisição, sem servidor, sem log. O algoritmo roda na sua máquina e a página funciona offline depois de carregada.',
+  },
+];
+---
+
+<Base titulo={titulo} descricao={descricao} schema={[appSchema, faqSchema]}>
+  <!-- Hero: o mesh gradient é o único elemento decorativo do site -->
+  <div class="relative isolate overflow-hidden border-b border-hairline">
+    <div
+      aria-hidden="true"
+      class="mesh-hero pointer-events-none absolute inset-x-0 -top-32 -z-10 h-[26rem] opacity-[0.11] blur-3xl"
+    >
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 pt-12 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
+      <div class="max-w-3xl">
+        <p class="eyebrow mb-3 sm:mb-4">Dados de teste para devs &amp; QA</p>
+        <h1 class="display-xl text-ink">Gerador de CPF</h1>
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-body sm:mt-5 sm:text-lg">
+          Gere CPFs aleatórios e válidos na hora. Números sorteados que passam no cálculo do
+          módulo 11, prontos para popular banco de dados e exercitar validação. Sem cadastro e sem
+          enviar nada para servidor nenhum.
+        </p>
+      </div>
+
+      <div class="mt-8 sm:mt-10">
+        <GeradorTool />
+      </div>
+
+      <p class="mt-4 max-w-2xl text-xs leading-relaxed text-mute">
+        Os CPFs gerados são combinações matematicamente válidas, mas fictícias: não são
+        consultados em nenhuma base da Receita Federal e não pertencem a pessoa alguma. Use
+        apenas para desenvolvimento e teste.
+      </p>
+
+      <nav
+        class="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1 text-center text-xs text-mute sm:mt-8"
+        aria-label="Institucional"
+      >
+        <a href="/sobre" class="hover:text-body hover:underline">Sobre</a>
+        <a href="/privacidade" class="hover:text-body hover:underline">Privacidade</a>
+        <a href="/termos" class="hover:text-body hover:underline">Termos de uso</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Diferenciais -->
+  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+    <p class="eyebrow mb-3">Por que este</p>
+    <h2 class="heading-lg max-w-2xl text-ink">
+      Um gerador feito para quem escreve código, não para quem vende banner.
+    </h2>
+
+    <div
+      class="mt-8 grid gap-px overflow-hidden rounded-md border border-hairline bg-hairline sm:mt-10 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {
+        diferenciais.map((d) => (
+          <div class="bg-elevated p-5 sm:p-6">
+            <h3 class="heading-md text-ink">{d.titulo}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-body">{d.texto}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Aprofundar -->
+  <section class="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <a href="/como-validar-cpf" class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}>
+        <h3 class="heading-md text-ink">Entender o algoritmo</h3>
+        <p class="mt-2 text-sm text-body">
+          O módulo 11 explicado passo a passo, com exemplo resolvido.
+        </p>
+      </a>
+      <a href="/codigo" class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}>
+        <h3 class="heading-md text-ink">Código pronto</h3>
+        <p class="mt-2 text-sm text-body">
+          Validar e gerar CPF em JavaScript, Python, PHP, Java e C#.
+        </p>
+      </a>
+      <a href="/o-que-e-cpf" class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}>
+        <h3 class="heading-md text-ink">O que cada dígito significa</h3>
+        <p class="mt-2 text-sm text-body">
+          A anatomia do CPF e a tabela completa de regiões fiscais.
+        </p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Conteúdo SEO -->
+  <section class="border-t border-hairline">
+    <Prose>
+      <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+      <h2>Gerador de CPF online: como funciona e para que serve</h2>
+      <p>
+        Este gerador de CPF online cria números que respeitam exatamente as regras de construção
+        do Cadastro de Pessoas Físicas: oito dígitos de série, um dígito de região fiscal e dois
+        dígitos verificadores calculados pelo algoritmo do módulo 11. Ou seja, não é uma sequência
+        de algarismos jogados ao acaso: é um <strong>gerador de CPF aleatório</strong> cujo
+        resultado passa em qualquer rotina de validação, porque a conta bate. É esse detalhe que
+        separa um <strong>gerador de CPF válido</strong> de qualquer sequência de 11 dígitos: a
+        validade vem do cálculo, não da aparência.
+      </p>
+      <p>
+        O uso mais comum é em desenvolvimento e QA: popular um banco de dados de teste, preencher
+        formulários durante um cadastro, simular uma planilha de clientes ou escrever um teste
+        automatizado que precisa de um CPF sintaticamente correto sem depender do CPF de uma
+        pessoa real. Dá para gerar de um até mil números por vez, escolher a região fiscal de
+        origem e exportar tudo em TXT, CSV ou JSON, sem instalar nada e sem que os dados saiam do
+        seu navegador.
+      </p>
+
+      <h3>E o gerador de CPF com nome?</h3>
+      <p>
+        Muita gente que procura um <strong>gerador de CPF com nome</strong> quer, na prática, uma
+        massa de teste completa: nome fictício mais um número que se comporte como CPF de verdade.
+        Este gerador entrega deliberadamente só a parte difícil de acertar: o número que passa no
+        módulo 11 e carrega uma região fiscal coerente, o detalhe que a maioria dos geradores por
+        aí erra ou ignora. O nome fica livre: qualquer texto serve, já que ele não faz parte do
+        cálculo de validade. Combine com um nome fictício qualquer e o par nome-mais-CPF fica
+        pronto para popular a tabela de teste.
+      </p>
+
+      <h3>Válido não é o mesmo que real</h3>
+      <p>
+        Vale reforçar a diferença entre um CPF <em>válido</em> e um CPF <em>real</em>. Válido
+        significa que os dígitos verificadores conferem com o cálculo: é só isso que uma rotina
+        de validação de formulário consegue checar, e é só isso que este gerador garante. Real
+        significa que o número está de fato cadastrado na
+        <a href="https://www.gov.br/receitafederal/pt-br/assuntos/meu-cpf" rel="noopener">
+          Receita Federal
+        </a>
+        e pertence a uma pessoa. Nenhum CPF gerado aqui é consultado em base nenhuma nem pertence a alguém; são combinações
+        matematicamente corretas, porém fictícias. Isso vale também para quem chegou até aqui
+        buscando em inglês por um <em>valid CPF number Brazil</em> para testar a localização de um
+        sistema: o número é sintaticamente válido para fins de teste, nunca um documento real.
+      </p>
+
+      <h3>Quando usar este gerador de CPF</h3>
+      <ul>
+        <li>Popular banco de dados ou planilha de teste sem usar dado de pessoa real.</li>
+        <li>Testar validação de formulário, máscara de campo e regra de negócio no back-end.</li>
+        <li>Gerar massa de dados em lote para teste de carga ou de importação.</li>
+        <li>Aprender e demonstrar o cálculo do módulo 11 na prática.</li>
+        <li>Validar ou formatar CPFs já existentes, com as ferramentas dedicadas do site.</li>
+      </ul>
+      <p>
+        O gerador fica logo no topo desta página. Para conferir se um CPF que você já tem segue as
+        regras do módulo 11, use o <a href="/validador-de-cpf">validador</a>, que aponta exatamente
+        qual dígito falhou; para adicionar ou remover pontuação de uma lista inteira de uma vez, use
+        o <a href="/formatador-de-cpf">formatador</a>. Quem quiser entender a conta por trás do
+        gerador de CPF válido encontra o
+        <a href="/como-validar-cpf">passo a passo do algoritmo</a> explicado com exemplo resolvido,
+        e a página sobre <a href="/o-que-e-cpf">o que é o CPF</a> detalha o que cada um dos 11
+        dígitos significa, incluindo a tabela de regiões fiscais.
+      </p>
+
+      <h3>Aviso importante</h3>
+      <p>
+        Este gerador de CPF online foi feito para ajudar estudantes, programadores, analistas e
+        testadores a gerar CPFs válidos, tipicamente para testar software em desenvolvimento. O
+        mau uso dos dados gerados aqui é de responsabilidade exclusiva de quem os usa. Os números
+        são gerados de forma aleatória, respeitando as regras de construção de cada documento.
+      </p>
+    </Prose>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-hairline">
+    <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <p class="eyebrow mb-3">FAQ</p>
+      <h2 class="heading-lg text-ink">Perguntas frequentes sobre o gerador de CPF</h2>
+
+      <dl class="mt-8 divide-y divide-hairline border-y border-hairline sm:mt-10">
+        {
+          FAQ.map((item) => (
+            <div class="py-6">
+              <dt class="heading-md text-ink">{item.p}</dt>
+              <dd class="mt-2.5 leading-relaxed text-body">{item.r}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <p class="mt-8 text-sm text-body">
+        Mais dúvidas, incluindo privacidade e situação cadastral, na página de
+        <a class="text-link underline underline-offset-2" href="/perguntas-frequentes">
+          perguntas frequentes
+        </a>.
+      </p>
+    </div>
+  </section>
+</Base>

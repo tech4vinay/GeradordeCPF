@@ -1,0 +1,241 @@
+---
+import Base from '../layouts/Base.astro';
+import ValidadorTool from '../components/ValidadorTool.astro';
+import Prose from '../components/Prose.astro';
+import { CARD } from '../lib/ui';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'Validador de CPF Online — Verifique se um CPF é Válido | Grátis';
+const descricao =
+  'Validador de CPF online e grátis: digite um CPF e veja se ele é válido pelo cálculo do módulo 11, com o motivo do erro. Sem cadastro e sem enviar dados.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/validador-de-cpf'));
+
+const appSchema = {
+  '@type': 'WebApplication',
+  '@id': `${SITE.url}/validador-de-cpf#validador`,
+  name: 'Validador de CPF',
+  alternateName: ['Validador de CPF Online', 'Verificar CPF Válido', 'Checar CPF'],
+  url: `${SITE.url}/validador-de-cpf`,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  browserRequirements: 'Requer JavaScript',
+  inLanguage: 'pt-BR',
+  description: descricao,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/validador-de-cpf'),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+  featureList: [
+    'Validação instantânea enquanto você digita',
+    'Aponta qual dígito verificador falhou',
+    'Mostra a região fiscal de origem do CPF válido',
+    'Validação em lote, um CPF por linha',
+    'Nenhum dado enviado para servidor',
+  ],
+};
+
+// Disjunto do FAQ da home e do de /perguntas-frequentes: aqui só perguntas sobre o
+// funcionamento específico do validador. Repetir pergunta entre páginas faz uma
+// competir com a outra no ranqueamento.
+const FAQ = [
+  {
+    p: 'Como funciona o validador de CPF?',
+    r: 'Ele aplica duas vezes o algoritmo do módulo 11 sobre os nove primeiros dígitos do número informado e compara o resultado com os dois últimos dígitos, os verificadores. Se os dois baterem, e o número não for uma sequência repetida, como 111.111.111-11, o CPF é considerado válido. Tudo roda em JavaScript no seu navegador, sem consultar servidor nenhum.',
+  },
+  {
+    p: 'O validador consulta a Receita Federal?',
+    r: 'Não. Nenhum site independente tem acesso à base cadastral da Receita Federal, que não é pública. Este validador confere apenas se o número é matematicamente válido, se os dígitos verificadores conferem com o cálculo. Isso não confirma que o CPF foi emitido nem qual é a situação cadastral do titular; essa consulta só existe nos canais oficiais do gov.br.',
+  },
+  {
+    p: 'Por que um CPF que eu sei que é real aparece como inválido aqui?',
+    r: 'O motivo mais comum é erro de digitação: um dígito trocado de posição já muda o resultado do módulo 11. Confira o número contra o documento original. Se a conta continuar não batendo, o validador mostra exatamente qual dígito verificador diverge e qual seria o valor esperado, o que ajuda a achar o erro.',
+  },
+  {
+    p: 'O validador guarda os CPFs que eu digito?',
+    r: 'Não. A validação acontece inteiramente no seu navegador; nenhum CPF digitado nesta página é enviado, registrado ou armazenado em servidor algum. A página nem tem um servidor de aplicação para onde os dados poderiam ir: depois de carregada, ela funciona até offline.',
+  },
+  {
+    p: 'Dá para validar uma lista inteira de CPFs de uma vez?',
+    r: 'Sim. O painel "Validar vários de uma vez" aceita um CPF por linha, com ou sem pontuação, e devolve uma tabela com o resultado de cada um: válido, inválido e o motivo. É a forma mais rápida de checar uma planilha ou uma base de teste inteira sem validar linha por linha.',
+  },
+  {
+    p: 'Qual a diferença entre CPF válido e CPF real?',
+    r: 'Válido significa que os dois dígitos verificadores conferem com o cálculo do módulo 11, é só isso que qualquer validador, este incluído, consegue checar. Real significa que o número está de fato cadastrado na Receita Federal e pertence a alguém. Um número pode ser perfeitamente válido sem nunca ter sido emitido.',
+  },
+  {
+    p: 'Por que 111.111.111-11 é inválido se os dígitos batem com a fórmula?',
+    r: 'Porque sequências com os 11 dígitos repetidos passam no cálculo do módulo 11 por coincidência matemática, mas nunca são emitidas como CPF de verdade. Por isso todo validador sério, este incluído, rejeita essas dez sequências por uma regra separada, além do cálculo dos verificadores.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  '@id': `${SITE.url}/validador-de-cpf#faq`,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/validador-de-cpf`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/validador-de-cpf'),
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.p,
+    acceptedAnswer: { '@type': 'Answer', text: item.r },
+  })),
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={[appSchema, faqSchema]} migalha="Validador de CPF">
+  <!-- Hero -->
+  <div class="relative isolate overflow-hidden border-b border-hairline">
+    <div
+      aria-hidden="true"
+      class="mesh-hero pointer-events-none absolute inset-x-0 -top-32 -z-10 h-[26rem] opacity-[0.11] blur-3xl"
+    >
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 pt-12 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
+      <div class="max-w-3xl">
+        <p class="eyebrow mb-3 sm:mb-4">Dados de teste para devs &amp; QA</p>
+        <h1 class="display-xl text-ink">Validador de CPF</h1>
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-body sm:mt-5 sm:text-lg">
+          Digite um CPF e veja na hora se ele é válido, pelo mesmo cálculo do módulo 11 que a
+          Receita Federal usa. Se não for, mostramos qual dígito verificador falhou. Valide um por
+          um ou uma lista inteira de uma vez, sem enviar nada para servidor nenhum.
+        </p>
+      </div>
+
+      <div class="mt-8 max-w-2xl sm:mt-10">
+        <ValidadorTool />
+      </div>
+    </div>
+  </div>
+
+  <!-- Aprofundar -->
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <a href="/" class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}>
+        <h3 class="heading-md text-ink">Gerar CPFs de teste</h3>
+        <p class="mt-2 text-sm text-body">Crie de 1 a 1000 CPFs válidos e aleatórios.</p>
+      </a>
+      <a
+        href="/formatador-de-cpf"
+        class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}
+      >
+        <h3 class="heading-md text-ink">Formatar CPF</h3>
+        <p class="mt-2 text-sm text-body">Adicione ou remova a pontuação de uma lista inteira.</p>
+      </a>
+      <a
+        href="/como-validar-cpf"
+        class={`${CARD} block p-5 transition-colors hover:bg-hairline-soft sm:p-6`}
+      >
+        <h3 class="heading-md text-ink">Entender o algoritmo</h3>
+        <p class="mt-2 text-sm text-body">O módulo 11 explicado passo a passo, com exemplo.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Conteúdo SEO -->
+  <section class="border-t border-hairline">
+    <Prose>
+      <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+      <h2>Validador de CPF online: o que ele checa e como usar</h2>
+      <p>
+        Este <strong>validador de CPF online</strong> confere, em tempo real, se um número segue
+        exatamente a regra de formação do Cadastro de Pessoas Físicas. Um CPF é formado por 11
+        dígitos: oito de série, um de região fiscal e dois <strong>dígitos verificadores</strong>
+        calculados a partir dos nove primeiros pelo algoritmo do <strong>módulo 11</strong>. Validar
+        um CPF é, na prática, refazer essa conta e comparar o resultado com os dois últimos
+        dígitos informados. Se baterem, o número é válido; se não baterem, alguma coisa foi
+        digitada errada ou o número nunca foi construído corretamente.
+      </p>
+      <p>
+        A ferramenta faz isso digitando a digitando: cole ou digite o CPF, com ou sem pontuação,
+        e o veredicto aparece na hora, sem precisar clicar em nada. Quando o CPF é válido, também
+        mostramos a região fiscal correspondente ao nono dígito, útil para conferir se o CPF é
+        coerente com o estado que ele deveria representar. Quando é inválido, apontamos o motivo
+        exato: dígito verificador errado, quantidade de dígitos diferente de 11, ou uma sequência
+        de dígitos repetidos, como 000.000.000-00, que passa na fórmula mas nunca é emitida.
+      </p>
+
+      <h3>Validar CPF em lote</h3>
+      <p>
+        Quem precisa checar mais de um número (uma planilha exportada, uma lista de cadastros ou
+        uma massa de teste inteira) não precisa repetir o processo um por um. O painel de lote
+        aceita um CPF por linha e devolve uma tabela com o resultado de cada linha: válido ou
+        inválido, e o motivo quando não passar. É a forma mais rápida de auditar uma base de dados
+        inteira sem escrever uma linha de código.
+      </p>
+
+      <h3>Validador de CPF não é consulta de situação cadastral</h3>
+      <p>
+        É importante separar duas coisas que costumam ser confundidas: <em>validar</em> um CPF e
+        <em>consultar sua situação</em> na Receita Federal. Este validador, como qualquer
+        validador independente, confere apenas se o número é matematicamente correto, ou seja,
+        se os dígitos verificadores conferem com o cálculo do módulo 11. Ele não sabe, e nenhuma
+        ferramenta fora dos canais oficiais consegue saber, se aquele CPF foi de fato emitido, se
+        está regular, suspenso ou cancelado. Essa informação vive exclusivamente na base da
+        Receita Federal, que não é pública, e a consulta oficial só existe nos
+        <a
+          href="https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp"
+          rel="noopener"
+        >
+          serviços do gov.br
+        </a>
+        com os dados do titular. Um CPF pode ser perfeitamente <strong>válido</strong> sem nunca
+        ter sido <strong>emitido</strong>: são conceitos diferentes.
+      </p>
+
+      <h3>Por que a validação importa no desenvolvimento de software</h3>
+      <p>
+        Formulários de cadastro, sistemas de faturamento e integrações com serviços de terceiros
+        costumam exigir CPF, e validar o formato antes de gravar no banco evita boa parte dos
+        problemas de dado inconsistente rio abaixo. Este validador serve para dois cenários
+        comuns: conferir manualmente um CPF pontual durante um teste, e auditar em lote uma massa
+        de dados de teste gerada por outra ferramenta, inclusive pelo
+        <a href="/">gerador de CPF</a> deste site. Para quem está implementando a própria rotina de
+        validação no back-end ou no front-end, o
+        <a href="/como-validar-cpf">passo a passo do algoritmo</a> mostra a conta completa, com
+        exemplo resolvido, e a página de <a href="/codigo">código pronto</a> traz a função escrita
+        em JavaScript, TypeScript, Python, PHP, Java e C#, todas cobrindo os dois casos que a
+        maioria das implementações caseiras erra: o resto menor que 2 e as sequências de dígitos
+        repetidos.
+      </p>
+
+      <h3>Privacidade</h3>
+      <p>
+        Nenhum CPF digitado nesta página sai do seu navegador. A validação, seja de um número só
+        ou de uma lista inteira, roda em JavaScript no seu computador; o site não tem servidor de
+        aplicação para onde os dados poderiam ser enviados. Depois de carregada, a página continua
+        funcionando mesmo sem conexão com a internet.
+      </p>
+    </Prose>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-hairline">
+    <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <p class="eyebrow mb-3">FAQ</p>
+      <h2 class="heading-lg text-ink">Perguntas frequentes sobre o validador de CPF</h2>
+
+      <dl class="mt-8 divide-y divide-hairline border-y border-hairline sm:mt-10">
+        {
+          FAQ.map((item) => (
+            <div class="py-6">
+              <dt class="heading-md text-ink">{item.p}</dt>
+              <dd class="mt-2.5 leading-relaxed text-body">{item.r}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <p class="mt-8 text-sm text-body">
+        Mais dúvidas, incluindo legalidade e privacidade, na página de
+        <a class="text-link underline underline-offset-2" href="/perguntas-frequentes">
+          perguntas frequentes
+        </a>.
+      </p>
+    </div>
+  </section>
+</Base>

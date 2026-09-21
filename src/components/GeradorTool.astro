@@ -1,0 +1,409 @@
+---
+import Icon from './Icon.astro';
+import { REGIOES, UF_NOMES, formatar, gerar } from '../lib/cpf';
+import { BTN, BTN_GHOST, CARD, HINT, LABEL, SELECT, INPUT } from '../lib/ui';
+
+// Um CPF real já no HTML: o rastreador e a primeira pintura veem conteúdo de verdade.
+// O script substitui por um recém-gerado assim que carrega.
+const inicial = formatar(gerar());
+---
+
+<section class={`${CARD} overflow-hidden`} data-gerador>
+  <!--
+    O resultado vem primeiro e grande: é a razão de a pessoa estar aqui.
+    Com quantidade 1 mostramos o destaque; acima disso, a lista.
+  -->
+  <div class="border-b border-hairline bg-hairline-soft/60 px-5 py-7 sm:px-6 sm:py-9" data-destaque>
+    <div class="mb-3 flex items-start justify-between gap-3">
+      <p class="eyebrow" data-destaque-titulo>CPF gerado</p>
+      <button
+        type="button"
+        class={`${BTN} shrink-0`}
+        data-acao="copiar-resultado"
+        aria-label={`Copiar o CPF ${inicial}`}
+      >
+        <Icon nome="copiar" />
+        <span data-rotulo>Copiar</span>
+      </button>
+    </div>
+
+    <!--
+      Os dois modos ocupam a mesma altura (min-h no wrapper), então trocar a
+      quantidade não faz o card pular nem a página reposicionar.
+    -->
+    <div class="flex min-h-[4.5rem] flex-col justify-center sm:min-h-[5rem]">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1" data-modo="unico">
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-4">
+          <output class="cpf-destaque min-w-0 break-all select-all" data-destaque-valor
+            >{inicial}</output
+          >
+        </div>
+        <p class="w-full text-sm text-mute select-all" data-destaque-nome hidden></p>
+      </div>
+
+      <label class="sr-only" for="g-lote">CPFs gerados</label>
+      <textarea
+        id="g-lote"
+        data-modo="varios"
+        data-lote
+        readonly
+        spellcheck="false"
+        hidden
+        class="h-[4.5rem] w-full resize-y rounded-sm border border-hairline bg-elevated p-3 font-mono text-sm leading-relaxed tabular-nums text-ink sm:h-[5rem]"
+      ></textarea>
+    </div>
+
+    <p class="mt-4 text-xs text-mute" data-destaque-regiao></p>
+  </div>
+
+  <!-- Ações -->
+  <div class="flex flex-wrap items-center gap-2 border-b border-hairline px-5 py-4 sm:px-6">
+    <button type="button" class={BTN} data-acao="gerar">
+      <Icon nome="atualizar" />
+      Gerar CPF
+      <kbd
+        aria-hidden="true"
+        class="hidden rounded-[3px] border border-current/25 px-1 font-mono text-[10px] leading-4 opacity-70 sm:inline"
+        >G</kbd
+      >
+    </button>
+    <div class="flex items-center gap-1.5">
+      <span class="sr-only" id="g-baixar-label">Baixar como</span>
+      <span class="hidden text-xs text-mute sm:inline" aria-hidden="true">Baixar</span>
+      {
+        ['txt', 'csv', 'json'].map((f) => (
+          <button
+            type="button"
+            class={`${BTN_GHOST} px-2.5`}
+            data-acao="baixar"
+            data-formato={f}
+            aria-label={`Baixar como ${f.toUpperCase()}`}
+          >
+            .{f}
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="ml-auto text-xs text-mute" data-resumo>1 CPF gerado</p>
+  </div>
+
+  <!-- Opções -->
+  <div class="grid gap-4 p-5 sm:grid-cols-3 sm:p-6">
+    <div>
+      <span class={LABEL} id="g-pont-label">Pontuação</span>
+      <div
+        class="flex h-10 rounded-sm border border-hairline bg-elevated p-0.5"
+        role="group"
+        aria-labelledby="g-pont-label"
+        id="g-pont"
+      >
+        <label class="flex-1">
+          <input type="radio" name="pontuacao" value="1" class="peer sr-only" checked />
+          <span
+            class="flex h-full cursor-pointer items-center justify-center rounded-[4px] text-sm text-body peer-checked:bg-hairline-soft peer-checked:font-medium peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-link"
+            >Com</span
+          >
+        </label>
+        <label class="flex-1">
+          <input type="radio" name="pontuacao" value="0" class="peer sr-only" />
+          <span
+            class="flex h-full cursor-pointer items-center justify-center rounded-[4px] text-sm text-body peer-checked:bg-hairline-soft peer-checked:font-medium peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-link"
+            >Sem</span
+          >
+        </label>
+      </div>
+      <p class={HINT}>000.000.000-00 ou 00000000000.</p>
+    </div>
+
+    <div>
+      <label class={LABEL} for="g-uf">Estado de origem</label>
+      <select class={SELECT} id="g-uf" name="uf" autocomplete="off">
+        <option value="">Aleatório</option>
+        {
+          REGIOES.map((r) => (
+            <optgroup label={`${r.nome} — dígito ${r.digito}`}>
+              {r.ufs.map((uf) => (
+                <option value={uf}>
+                  {uf} — {UF_NOMES[uf]}
+                </option>
+              ))}
+            </optgroup>
+          ))
+        }
+      </select>
+      <p class={HINT}>Agrupado por região fiscal, que é o que o 9º dígito codifica.</p>
+    </div>
+
+    <div>
+      <label class={LABEL} for="g-qtd">Quantidade</label>
+      <input
+        class={INPUT}
+        type="number"
+        id="g-qtd"
+        name="qtd"
+        value="1"
+        min="1"
+        max="1000"
+        step="1"
+        inputmode="numeric"
+        autocomplete="off"
+      />
+      <p class={HINT}>De 1 a 1000 por vez.</p>
+    </div>
+
+    <label class="flex items-center gap-2 sm:col-span-3">
+      <input type="checkbox" id="g-nome" name="nome" class="size-4 rounded-[3px] border-hairline" />
+      <span class="text-sm text-body">Incluir nome fictício</span>
+    </label>
+  </div>
+
+  <noscript>
+    <p class="border-t border-hairline px-5 py-3 text-sm text-body sm:px-6">
+      Ative o JavaScript para gerar novos CPFs. Todo o cálculo roda no seu navegador, nada é
+      enviado para nenhum servidor.
+    </p>
+  </noscript>
+
+  <!-- Memória de cálculo -->
+  <details class="border-t border-hairline" data-calculo hidden>
+    <summary
+      class="cursor-pointer list-none px-5 py-3 text-sm font-medium text-ink select-none sm:px-6"
+    >
+      Como este CPF foi calculado
+      <span class="ml-1 text-mute" aria-hidden="true">▾</span>
+    </summary>
+    <div class="overflow-x-auto px-5 pb-5 sm:px-6" data-calculo-corpo></div>
+  </details>
+</section>
+
+<p class="sr-only" role="status" aria-live="polite" data-anuncio></p>
+
+<script>
+  import {
+    UF_TO_DIGITO,
+    explicarCalculo,
+    formatar,
+    gerarVarios,
+    limpar,
+    regiaoDe,
+    type UF,
+  } from '../lib/cpf';
+  import { gerarNomes } from '../lib/nomes';
+
+  const raiz = document.querySelector<HTMLElement>('[data-gerador]');
+  if (raiz) {
+    const $qtd = raiz.querySelector<HTMLInputElement>('#g-qtd')!;
+    const $uf = raiz.querySelector<HTMLSelectElement>('#g-uf')!;
+    const $nome = raiz.querySelector<HTMLInputElement>('#g-nome')!;
+    const $unico = raiz.querySelector<HTMLElement>('[data-modo="unico"]')!;
+    const $lote = raiz.querySelector<HTMLTextAreaElement>('[data-lote]')!;
+    const $destaqueTitulo = raiz.querySelector<HTMLElement>('[data-destaque-titulo]')!;
+    const $destaqueValor = raiz.querySelector<HTMLElement>('[data-destaque-valor]')!;
+    const $destaqueNome = raiz.querySelector<HTMLElement>('[data-destaque-nome]')!;
+    const $destaqueRegiao = raiz.querySelector<HTMLElement>('[data-destaque-regiao]')!;
+    const $copiar = raiz.querySelector<HTMLButtonElement>('[data-acao="copiar-resultado"]')!;
+    const $resumo = raiz.querySelector<HTMLElement>('[data-resumo]')!;
+    const $calculo = raiz.querySelector<HTMLDetailsElement>('[data-calculo]')!;
+    const $calculoCorpo = raiz.querySelector<HTMLElement>('[data-calculo-corpo]')!;
+    const $anuncio = document.querySelector<HTMLElement>('[data-anuncio]')!;
+
+    let atuais: string[] = [];
+    let nomesAtuais: string[] = [];
+
+    const comPontuacao = () =>
+      raiz.querySelector<HTMLInputElement>('input[name="pontuacao"]:checked')?.value === '1';
+    const comNome = () => $nome.checked;
+
+    const exibir = (cpf: string) => (comPontuacao() ? formatar(cpf) : limpar(cpf));
+    /** "Nome Sobrenome — 000.000.000-00", ou só o CPF quando o nome está desligado. */
+    const exibirLinha = (cpf: string, i: number) =>
+      comNome() ? `${nomesAtuais[i]} — ${exibir(cpf)}` : exibir(cpf);
+
+    const anunciar = (msg: string) => {
+      $anuncio.textContent = msg;
+    };
+
+    /** Mantém a configuração na URL para que ela possa ser compartilhada ou salva. */
+    function sincronizarUrl() {
+      const p = new URLSearchParams();
+      if ($qtd.value !== '1') p.set('qtd', $qtd.value);
+      if ($uf.value) p.set('uf', $uf.value);
+      if (!comPontuacao()) p.set('pontuacao', '0');
+      if (comNome()) p.set('nome', '1');
+      const busca = p.toString();
+      // Preserva o hash: na home ele guarda qual aba está aberta.
+      history.replaceState(null, '', `${location.pathname}${busca ? `?${busca}` : ''}${location.hash}`);
+    }
+
+    /** O texto que o botão de copiar entrega: o número único, ou a lista inteira. */
+    const textoResultado = () => atuais.map(exibirLinha).join('\n');
+
+    function render() {
+      const unico = atuais.length === 1;
+      const contagem = `${atuais.length} ${unico ? 'CPF gerado' : 'CPFs gerados'}`;
+
+      // Um resultado vira número grande; vários viram textarea rolável, no mesmo espaço.
+      $unico.hidden = !unico;
+      $lote.hidden = unico;
+      $destaqueTitulo.textContent = unico ? 'CPF gerado' : contagem;
+
+      if (unico) {
+        const valor = exibir(atuais[0]);
+        $destaqueValor.textContent = valor;
+        $destaqueNome.textContent = nomesAtuais[0] ?? '';
+        $destaqueNome.hidden = !comNome();
+        $copiar.setAttribute('aria-label', `Copiar o CPF ${valor}`);
+        const regiao = regiaoDe(atuais[0]);
+        $destaqueRegiao.textContent = regiao ? `${regiao.nome} — ${regiao.ufs.join(', ')}` : '';
+      } else {
+        // Um textarea em vez de mil <li>: rola sozinho, dá para selecionar à mão
+        // e o navegador não precisa montar nó nenhum por CPF.
+        $lote.value = textoResultado();
+        $copiar.setAttribute('aria-label', `Copiar os ${atuais.length} CPFs gerados`);
+        // A região varia por linha; ela vai completa nos downloads .csv e .json.
+        $destaqueRegiao.textContent = 'Região fiscal de cada número nos arquivos .csv e .json.';
+      }
+
+      $copiar.querySelector('[data-rotulo]')!.textContent = unico ? 'Copiar' : 'Copiar todos';
+      $resumo.textContent = contagem;
+      renderCalculo();
+    }
+
+    /** Memória de cálculo do módulo 11 para o primeiro resultado. */
+    function renderCalculo() {
+      const cpf = atuais[0];
+      if (!cpf) return;
+
+      const linhas = explicarCalculo(cpf)
+        .map((p) => {
+          const contas = p.digitos.map((d, i) => `${d}&times;${p.pesos[i]}`).join(' + ');
+          return `
+            <div class="mt-4 first:mt-0">
+              <p class="mb-1.5 text-sm font-medium text-ink">${p.rotulo} dígito verificador &rarr; <span class="font-mono">${p.resultado}</span></p>
+              <p class="font-mono text-xs leading-relaxed text-body">${contas}</p>
+              <p class="mt-1.5 font-mono text-xs text-body">
+                soma = ${p.soma} &nbsp;·&nbsp; ${p.soma} mod 11 = ${p.resto} &nbsp;·&nbsp;
+                ${p.resto < 2 ? `resto &lt; 2, logo o dígito é <strong class="text-ink">0</strong>` : `11 &minus; ${p.resto} = <strong class="text-ink">${p.resultado}</strong>`}
+              </p>
+            </div>`;
+        })
+        .join('');
+
+      $calculoCorpo.innerHTML = `
+        <p class="mb-3 text-sm text-body">Para <span class="font-mono text-ink">${formatar(cpf)}</span>, a partir dos 9 primeiros dígitos:</p>
+        ${linhas}`;
+      $calculo.hidden = false;
+    }
+
+    async function copiar(texto: string, botao?: HTMLButtonElement) {
+      const rotulo = botao?.querySelector('[data-rotulo]');
+      try {
+        await navigator.clipboard.writeText(texto);
+        anunciar('Copiado.');
+        if (rotulo) {
+          // Guarda o rótulo real: ele é "Copiar" ou "Copiar todos" conforme a quantidade.
+          const antes = rotulo.textContent;
+          rotulo.textContent = 'Copiado';
+          setTimeout(() => (rotulo.textContent = antes), 1400);
+        }
+      } catch {
+        anunciar('Não foi possível copiar. Selecione o número e use Ctrl+C.');
+      }
+    }
+
+    function gerarAgora() {
+      const uf = ($uf.value || null) as UF | null;
+      atuais = gerarVarios(Number($qtd.value) || 1, uf);
+      nomesAtuais = comNome() ? gerarNomes(atuais.length) : [];
+      render();
+      sincronizarUrl();
+      anunciar(`${atuais.length} ${atuais.length === 1 ? 'CPF gerado' : 'CPFs gerados'}.`);
+    }
+
+    function baixar(formato: string) {
+      const nome = comNome();
+      const dados =
+        formato === 'json'
+          ? JSON.stringify(
+              atuais.map((cpf, i) => ({
+                ...(nome ? { nome: nomesAtuais[i] } : {}),
+                cpf: formatar(cpf),
+                cpf_numeros: cpf,
+                regiao_fiscal: regiaoDe(cpf)?.nome ?? null,
+              })),
+              null,
+              2,
+            )
+          : formato === 'csv'
+            ? [`${nome ? 'nome,' : ''}cpf,cpf_numeros,regiao_fiscal`]
+                .concat(
+                  atuais.map(
+                    (c, i) =>
+                      `${nome ? `"${nomesAtuais[i]}",` : ''}${formatar(c)},${c},"${regiaoDe(c)?.nome ?? ''}"`,
+                  ),
+                )
+                .join('\n')
+            : atuais.map(exibirLinha).join('\n');
+
+      const tipo = { json: 'application/json', csv: 'text/csv', txt: 'text/plain' }[formato]!;
+      const url = URL.createObjectURL(new Blob([dados], { type: `${tipo};charset=utf-8` }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cpfs.${formato}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      anunciar(`Arquivo ${formato.toUpperCase()} baixado.`);
+    }
+
+    raiz.addEventListener('click', (e) => {
+      const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-acao]');
+      if (!alvo) return;
+      const acao = alvo.dataset.acao;
+      if (acao === 'gerar') gerarAgora();
+      else if (acao === 'baixar') baixar(alvo.dataset.formato!);
+      else if (acao === 'copiar-resultado') copiar(textoResultado(), $copiar);
+    });
+
+    // Trocar a pontuação só reformata; não vale gastar números novos.
+    raiz.addEventListener('change', (e) => {
+      const alvo = e.target as HTMLElement;
+      if (alvo.matches('input[name="pontuacao"]')) {
+        render();
+        sincronizarUrl();
+      } else if (alvo === $qtd || alvo === $uf || alvo === $nome) {
+        gerarAgora();
+      }
+    });
+
+    // Atalhos: G gera, C copia tudo. Inertes em campos de texto e quando a
+    // aba do gerador não está visível (a home reúne as três ferramentas).
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!raiz.isConnected || raiz.closest('[hidden]')) return;
+      const foco = document.activeElement;
+      if (
+        foco instanceof HTMLInputElement ||
+        foco instanceof HTMLSelectElement ||
+        foco instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (e.key === 'g' || e.key === 'G') gerarAgora();
+      else if (e.key === 'c' || e.key === 'C') copiar(textoResultado(), $copiar);
+    });
+
+    // Restaura a configuração vinda da URL antes da primeira geração.
+    const params = new URLSearchParams(location.search);
+    const ufParam = params.get('uf')?.toUpperCase();
+    if (ufParam && ufParam in UF_TO_DIGITO) $uf.value = ufParam;
+    const qtdParam = Number(params.get('qtd'));
+    if (qtdParam >= 1 && qtdParam <= 1000) $qtd.value = String(Math.floor(qtdParam));
+    if (params.get('pontuacao') === '0') {
+      raiz.querySelector<HTMLInputElement>('input[name="pontuacao"][value="0"]')!.checked = true;
+    }
+    if (params.get('nome') === '1') $nome.checked = true;
+
+    gerarAgora();
+  }
+</script>
