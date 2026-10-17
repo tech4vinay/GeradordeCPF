@@ -4,10 +4,11 @@ import Cabecalho from '../components/Cabecalho.astro';
 import Prose from '../components/Prose.astro';
 import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
 import { explicarCalculo, formatar } from '../lib/cpf';
+import { CARD, HINT, INPUT, LABEL } from '../lib/ui';
 
-const titulo = 'Como validar um CPF: o algoritmo do módulo 11 passo a passo';
+const titulo = 'Dígito verificador do CPF: como calcular e validar (módulo 11)';
 const descricao =
-  'O cálculo dos dois dígitos verificadores do CPF explicado com exemplo: pesos, soma, resto da divisão por 11 e os casos especiais que quase todo mundo erra.';
+  'Calcule o dígito verificador do CPF online e veja a conta do módulo 11 com exemplo resolvido: pesos, soma, resto e os casos especiais que muita gente erra.';
 
 // O exemplo é calculado pela mesma função que a ferramenta usa — a página não tem
 // como divergir da implementação.
@@ -21,7 +22,7 @@ const schema = {
   '@type': 'TechArticle',
   '@id': `${SITE.url}/como-validar-cpf#artigo`,
   headline: titulo,
-  name: 'Como validar um CPF',
+  name: 'Dígito verificador do CPF',
   description: descricao,
   inLanguage: 'pt-BR',
   url: `${SITE.url}/como-validar-cpf`,
@@ -34,12 +35,34 @@ const schema = {
 };
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Como validar um CPF">
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Dígito verificador do CPF">
   <Cabecalho
     eyebrow="Algoritmo"
-    titulo="Como validar um CPF"
-    lead="O CPF não é um número qualquer: os dois últimos dígitos são calculados a partir dos nove primeiros. Isso é o que permite detectar um dígito trocado sem consultar base nenhuma."
+    titulo="Dígito verificador do CPF: como calcular e validar"
+    lead="Os dois últimos dígitos do CPF são calculados a partir dos nove primeiros pelo módulo 11. É isso que permite detectar um dígito trocado sem consultar base nenhuma."
   />
+
+  <!-- Calculadora: o exemplo da página já vem preenchido, então o HTML tem resultado real -->
+  <div class="mx-auto max-w-2xl px-4 pt-10 sm:px-6">
+    <section class={`${CARD} p-5 sm:p-6`} data-calc-dv>
+      <label class={LABEL} for="dv-base">Calcular dígito verificador</label>
+      <input
+        class={`${INPUT} font-mono text-base tabular-nums`}
+        type="text"
+        id="dv-base"
+        value={formatar(EXEMPLO).slice(0, 11)}
+        inputmode="numeric"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="11"
+      />
+      <p class={HINT}>Digite os 9 primeiros dígitos do CPF, com ou sem pontos.</p>
+      <p class="mt-4 text-sm text-body" role="status" aria-live="polite" data-calc-saida>
+        Dígitos verificadores: <strong class="font-mono text-ink">{EXEMPLO.slice(9)}</strong> · CPF
+        completo: <span class="font-mono text-ink select-all">{formatar(EXEMPLO)}</span>
+      </p>
+    </section>
+  </div>
 
   <Prose>
     <h2>A estrutura do número</h2>
@@ -60,7 +83,7 @@ const schema = {
       </li>
     </ul>
 
-    <h2>O cálculo</h2>
+    <h2>Como calcular o dígito verificador</h2>
     <p>
       Os dois dígitos usam a mesma receita, chamada <strong>módulo 11</strong>. Muda apenas
       quantos dígitos entram na conta e, por consequência, os pesos:
@@ -129,6 +152,14 @@ const schema = {
       é exatamente como <code>{formatar(EXEMPLO)}</code> termina. O CPF é válido.
     </p>
 
+    <h2>Como validar um CPF</h2>
+    <p>
+      Validar é a mesma conta: calcule os dois dígitos verificadores a partir dos nove primeiros e
+      compare com os dois últimos informados. Se algum for diferente, ou se os 11 dígitos forem
+      iguais, o CPF é inválido. Para conferir um número pronto, o
+      <a href="/validador-de-cpf">validador de CPF</a> faz isso e aponta qual dígito falhou.
+    </p>
+
     <h2>Os dois casos especiais</h2>
     <h3>Resto 0 ou 1</h3>
     <p>
@@ -160,8 +191,32 @@ const schema = {
       }.
     </p>
     <p>
-      Para ver a conta acontecendo com números novos, o <a href="/">gerador</a> mostra a memória de
-      cálculo de cada CPF que produz.
+      Para ver a conta acontecendo com números novos, use a ferramenta para
+      <a href="/">gerar CPF aleatório</a>: ela mostra a memória de cálculo de cada CPF que produz.
     </p>
   </Prose>
 </Base>
+
+<script>
+  import { explicarCalculo, formatar, limpar } from '../lib/cpf';
+
+  const raiz = document.querySelector<HTMLElement>('[data-calc-dv]');
+  if (raiz) {
+    const $base = raiz.querySelector<HTMLInputElement>('#dv-base')!;
+    const $saida = raiz.querySelector<HTMLElement>('[data-calc-saida]')!;
+
+    $base.addEventListener('input', () => {
+      const base = limpar($base.value);
+      if (base.length !== 9) {
+        $saida.textContent =
+          base.length < 9 ? `Faltam ${9 - base.length} dígito(s).` : 'Use só os 9 primeiros dígitos.';
+        return;
+      }
+      const dvs = explicarCalculo(base).map((p) => p.resultado).join('');
+      const cpf = formatar(base + dvs);
+      // 111.111.111-11 e afins fecham a conta, mas são rejeitados por regra à parte.
+      const aviso = /^(\d)\1{8}$/.test(base) ? ' (sequência repetida: inválido mesmo assim)' : '';
+      $saida.innerHTML = `Dígitos verificadores: <strong class="font-mono text-ink">${dvs}</strong> · CPF completo: <span class="font-mono text-ink select-all">${cpf}</span>${aviso}`;
+    });
+  }
+</script>

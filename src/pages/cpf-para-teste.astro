@@ -3,11 +3,15 @@ import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
 import Prose from '../components/Prose.astro';
 import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
-import { formatar, validar } from '../lib/cpf';
+import { formatar, gerarVarios, validar } from '../lib/cpf';
+import { BTN, CARD } from '../lib/ui';
 
-const titulo = 'CPF para teste: como escolher e quais casos cobrir';
+const titulo = 'CPF para teste: CPFs válidos e casos de borda para QA';
 const descricao =
-  'Um CPF válido não basta para testar um formulário. Veja os casos que quebram sistemas de verdade: zero à esquerda, dígito 0, repetidos, máscara e tamanho.';
+  'Gere CPFs válidos para teste e veja os casos de borda que quebram sistemas de verdade: zero à esquerda, dígito 0, repetidos, máscara e tamanho.';
+
+// Lote inicial já no HTML; o script troca por um novo a cada clique.
+const LOTE = gerarVarios(5).map(formatar);
 
 const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/cpf-para-teste'));
 
@@ -43,9 +47,24 @@ const schema = {
 <Base titulo={titulo} descricao={descricao} schema={schema} migalha="CPF para teste">
   <Cabecalho
     eyebrow="Guia para QA"
-    titulo="CPF para teste: quais casos cobrir"
+    titulo="CPF para teste: CPFs válidos e casos de borda"
     lead="Testar um campo de CPF com um único número válido cobre o caminho feliz e quase nada além disso. Os bugs de produção moram nos outros casos."
   />
+
+  <div class="mx-auto max-w-2xl px-4 pt-10 sm:px-6">
+    <section class={`${CARD} p-5 sm:p-6`} data-lote-teste>
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="button" class={BTN}>Gerar 5 CPFs de teste</button>
+        <a class="text-sm text-link underline underline-offset-2" href="/?qtd=50">
+          Precisa de mais? Gere até 1000
+        </a>
+      </div>
+      <pre
+        class="mt-4 font-mono text-sm leading-relaxed tabular-nums text-ink select-all"
+        aria-live="polite"
+        data-lote-saida>{LOTE.join('\n')}</pre>
+    </section>
+  </div>
 
   <Prose>
     <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
@@ -53,9 +72,9 @@ const schema = {
     <h2>Resposta curta</h2>
     <p>
       Use CPFs <strong>matematicamente válidos e fictícios</strong>, nunca o CPF de uma pessoa
-      real, e monte uma bateria pequena com casos válidos e inválidos. O
-      <a href="/">gerador</a> produz os válidos em volume; a tabela abaixo lista os casos de
-      borda que valem um teste cada.
+      real, e monte uma bateria pequena com casos válidos e inválidos. Os cinco acima saem na
+      hora; para volume, use a ferramenta para <a href="/">gerar CPF aleatório</a>. A tabela
+      abaixo lista os casos de borda que valem um teste cada.
     </p>
 
     <h2>A bateria mínima</h2>
@@ -141,3 +160,16 @@ const schema = {
     </p>
   </Prose>
 </Base>
+
+<script>
+  import { formatar, gerarVarios } from '../lib/cpf';
+
+  const raiz = document.querySelector<HTMLElement>('[data-lote-teste]');
+  if (raiz) {
+    const $saida = raiz.querySelector<HTMLElement>('[data-lote-saida]')!;
+    const gerar = () => ($saida.textContent = gerarVarios(5).map(formatar).join('\n'));
+    raiz.querySelector('button')!.addEventListener('click', gerar);
+    // O lote do HTML é o mesmo para todos os visitantes; cada um recebe o seu.
+    gerar();
+  }
+</script>

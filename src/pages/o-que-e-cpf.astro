@@ -2,12 +2,16 @@
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
 import Prose from '../components/Prose.astro';
-import { REGIOES, UF_NOMES } from '../lib/cpf';
+import { REGIOES, UF_NOMES, formatar, regiaoDe } from '../lib/cpf';
 import { ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
 
-const titulo = 'O que é o CPF e o que cada dígito significa';
+const titulo = 'O que é o CPF: quantos dígitos tem e o que cada um significa';
 const descricao =
-  'A estrutura do CPF: os oito dígitos de série, o dígito da região fiscal e os dois verificadores. Com a tabela completa de regiões por estado.';
+  'O CPF tem 11 dígitos: 8 de série, 1 da região fiscal e 2 verificadores. Veja o formato, um exemplo e a tabela de regiões fiscais por estado.';
+
+// Mesmo exemplo de /como-validar-cpf; a região sai do cpf.ts, não do texto.
+const EXEMPLO = '11144477735';
+const REGIAO_EXEMPLO = regiaoDe(EXEMPLO)!;
 
 // A tabela de regiões fiscais é o ativo mais citável do site — é a correção que quase
 // todo concorrente apresenta errado. Sem schema próprio ela era a única página de
@@ -35,8 +39,8 @@ const schema = {
 <Base titulo={titulo} descricao={descricao} schema={schema} migalha="O que é o CPF">
   <Cabecalho
     eyebrow="Referência"
-    titulo="O que é o CPF"
-    lead="Cadastro de Pessoas Físicas: o número de 11 dígitos que a Receita Federal usa para identificar contribuintes. Cada parte dele carrega uma informação."
+    titulo="O que é o CPF: quantos dígitos tem e o que cada um significa"
+    lead="O CPF tem 11 dígitos: 9 de base e 2 verificadores. É o Cadastro de Pessoas Físicas, o número que a Receita Federal usa para identificar contribuintes, e cada parte dele carrega uma informação."
   />
 
   <Prose>
@@ -56,6 +60,15 @@ const schema = {
       O CPF tem <strong>11 dígitos</strong>: nove de base e dois verificadores. Com a pontuação
       (<code>000.000.000-00</code>) são 14 caracteres. Ele pode começar com zero, então a
       forma segura de guardá-lo é como texto de 11 posições, nunca como número.
+    </p>
+
+    <h2 id="formato">Formato e exemplo</h2>
+    <p>
+      O formato oficial é <code>000.000.000-00</code>: três blocos de três dígitos separados por
+      ponto e os dois verificadores depois do hífen. Um exemplo válido é <code>{formatar(EXEMPLO)}</code>: <code>{EXEMPLO.slice(0, 8)}</code> é o
+      número de série, <code>{EXEMPLO[8]}</code> indica a{' '}
+      {`${REGIAO_EXEMPLO.nome} (${REGIAO_EXEMPLO.ufs.join(', ')})`} e <code>{EXEMPLO.slice(9)}</code> são os dígitos
+      verificadores.
     </p>
 
     <h2>Anatomia dos 11 dígitos</h2>
@@ -125,7 +138,7 @@ const schema = {
     <h2>Continue</h2>
     <p>
       <a href="/como-validar-cpf">O algoritmo passo a passo</a> ·
-      <a href="/">gerar CPFs para teste</a> ·
+      <a href="/">gerar CPF aleatório</a> ·
       <a href="/perguntas-frequentes">perguntas frequentes</a> ·
       <a href="/cpf-para-teste">CPF para teste</a> ·
       <a href="/cpf-falso">CPF falso: é crime?</a>

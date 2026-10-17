@@ -10,8 +10,8 @@
 
 ## Aprenda
 
-- [Como validar um CPF](https://cpfaleatorio.com/como-validar-cpf): o algoritmo do módulo 11 explicado passo a passo, com exemplo resolvido
-- [O que é o CPF](https://cpfaleatorio.com/o-que-e-cpf): estrutura dos 11 dígitos e tabela completa de regiões fiscais por estado
+- [Dígito verificador do CPF](https://cpfaleatorio.com/como-validar-cpf): como calcular e validar pelo módulo 11, com calculadora e exemplo resolvido
+- [O que é o CPF](https://cpfaleatorio.com/o-que-e-cpf): quantos dígitos tem (11), formato, exemplo e tabela completa de regiões fiscais por estado
 - [Perguntas frequentes](https://cpfaleatorio.com/perguntas-frequentes): legalidade do uso de CPFs gerados, consulta na Receita, dúvidas comuns
 
 - [CPF para teste](https://cpfaleatorio.com/cpf-para-teste): bateria de casos de borda para testar campos de CPF (zero à esquerda, dígito 0, repetidos, máscara)

@@ -148,7 +148,8 @@ const faqSchema = {
         calculados a partir dos nove primeiros pelo algoritmo do <strong>módulo 11</strong>. Validar
         um CPF é, na prática, refazer essa conta e comparar o resultado com os dois últimos
         dígitos informados. Se baterem, o número é válido; se não baterem, alguma coisa foi
-        digitada errada ou o número nunca foi construído corretamente.
+        digitada errada ou o número nunca foi construído corretamente. Para fazer a conta à mão,
+        veja <a href="/como-validar-cpf">como validar um CPF passo a passo</a>.
       </p>
       <p>
         A ferramenta faz isso digitando a digitando: cole ou digite o CPF, com ou sem pontuação,
@@ -196,7 +197,7 @@ const faqSchema = {
         de dados de teste gerada por outra ferramenta, inclusive pelo
         <a href="/">gerador de CPF</a> deste site. Para quem está implementando a própria rotina de
         validação no back-end ou no front-end, o
-        <a href="/como-validar-cpf">passo a passo do algoritmo</a> mostra a conta completa, com
+        <a href="/como-validar-cpf">cálculo do dígito verificador</a> mostra a conta completa, com
         exemplo resolvido, e a página de <a href="/codigo">código pronto</a> traz a função escrita
         em JavaScript, TypeScript, Python, PHP, Java e C#, todas cobrindo os dois casos que a
         maioria das implementações caseiras erra: o resto menor que 2 e as sequências de dígitos
