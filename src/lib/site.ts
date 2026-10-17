@@ -78,6 +78,9 @@ export const RODAPE = [
       { href: '/como-validar-cpf', rotulo: 'Como validar um CPF' },
       { href: '/o-que-e-cpf', rotulo: 'O que é CPF' },
       { href: '/perguntas-frequentes', rotulo: 'Perguntas frequentes' },
+      { href: '/cpf-para-teste', rotulo: 'CPF para teste' },
+      { href: '/cpf-falso', rotulo: 'CPF falso: é crime?' },
+      { href: '/lgpd-dados-de-teste', rotulo: 'LGPD e dados de teste' },
     ],
   },
   {

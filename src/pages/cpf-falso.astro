@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'CPF falso: o que é, é crime e o que usar para testar sistemas';
+const descricao =
+  'CPF falso é crime? Depende do uso. Veja a diferença entre CPF gerado para teste, CPF de terceiros e documento falsificado e os artigos da lei.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/cpf-falso'));
+
+const schema = {
+  '@type': 'Article',
+  '@id': `${SITE.url}/cpf-falso#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/cpf-falso`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/cpf-falso'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="CPF falso">
+  <Cabecalho
+    eyebrow="Guia"
+    titulo="CPF falso: o que é e quando vira crime"
+    lead="A expressão mistura três coisas bem diferentes. Uma delas é rotina de qualquer equipe de software; as outras duas são crime. Entender a diferença evita problema."
+  />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <h2>Resposta curta</h2>
+    <p>
+      Gerar um número de CPF que obedece ao cálculo do módulo 11 <strong>não é crime</strong>: é
+      aritmética, e é assim que desenvolvedores e testadores montam dados de homologação. O que
+      pode ser crime é o <strong>uso</strong>: se passar por outra pessoa, fraudar um cadastro,
+      obter vantagem indevida ou adulterar um documento.
+    </p>
+
+    <h2>Três coisas que as pessoas chamam de "CPF falso"</h2>
+
+    <h3>1. CPF gerado para teste</h3>
+    <p>
+      Um número de 11 dígitos cujos dois últimos dígitos foram calculados corretamente a partir
+      dos nove primeiros. Ele passa em qualquer validação de formato, mas não foi emitido para
+      ninguém de propósito. É a matéria-prima de formulários de homologação, bancos de teste e
+      testes automatizados. É para isso que serve o <a href="/">gerador desta página</a>.
+    </p>
+
+    <h3>2. CPF de uma pessoa real usado sem autorização</h3>
+    <p>
+      Aqui o número não é "falso": é verdadeiro e pertence a alguém. Usá-lo para abrir conta,
+      pedir crédito, comprar a prazo ou se cadastrar em nome do titular é o cenário clássico de
+      fraude, e também viola a proteção de dados pessoais do titular.
+    </p>
+
+    <h3>3. Documento de CPF adulterado ou forjado</h3>
+    <p>
+      Cartão, comprovante de inscrição ou qualquer papel alterado para mostrar dados que não são
+      os verdadeiros. É falsificação de documento, independentemente de o número parecer válido.
+    </p>
+
+    <h2>Quando vira crime</h2>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Situação</th>
+          <th scope="col">Enquadramento possível</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Gerar CPFs para testar seu próprio sistema ou um ambiente de homologação</td>
+          <td>Uso lícito</td>
+        </tr>
+        <tr>
+          <td>Usar CPF de terceiro para obter crédito, compra ou benefício</td>
+          <td>Estelionato (art. 171 do Código Penal)</td>
+        </tr>
+        <tr>
+          <td>Declarar dados falsos em cadastro para prejudicar direito ou criar obrigação</td>
+          <td>Falsidade ideológica (art. 299)</td>
+        </tr>
+        <tr>
+          <td>Atribuir-se identidade que não é sua para obter vantagem</td>
+          <td>Falsa identidade (art. 307)</td>
+        </tr>
+        <tr>
+          <td>Alterar ou forjar um documento de CPF</td>
+          <td>Falsificação de documento (arts. 297 e 298)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      A tabela é um guia de leitura, não parecer jurídico: o enquadramento depende dos fatos de
+      cada caso e quem decide é a Justiça. O ponto prático é que a responsabilidade recai sobre
+      quem usa o número, e ela existe seja qual for a origem dele.
+    </p>
+
+    <h2>Por que um CPF "falso" não funciona em cadastro real</h2>
+    <p>
+      Um número matematicamente válido só prova que a conta dos dígitos verificadores fecha. Ele
+      não prova que o CPF existe, nem de quem é. Serviços que importam, como bancos, operadoras e
+      lojas com análise de crédito, consultam a situação cadastral do titular e cruzam o CPF com
+      nome e data de nascimento. Um número gerado ao acaso falha nessa etapa, e quando coincide
+      com um CPF real, o titular real é quem fica exposto.
+    </p>
+    <p>
+      Por isso o <a href="/perguntas-frequentes">FAQ</a> deste site repete o aviso: os números
+      gerados aqui são só para teste. Quando um sistema pede o CPF do usuário, a resposta certa é
+      o CPF verdadeiro do usuário.
+    </p>
+
+    <h2>O que usar em desenvolvimento e QA</h2>
+    <ul>
+      <li>
+        Para ter números válidos em volume, use o <a href="/">gerador</a>: até 1000 por lote, sem
+        repetição, com ou sem pontuação.
+      </li>
+      <li>
+        Para montar a bateria de casos (inválidos, repetidos, zero à esquerda), veja
+        <a href="/cpf-para-teste">CPF para teste: quais casos cobrir</a>.
+      </li>
+      <li>
+        Para entender por que dados reais não devem ir para homologação, leia
+        <a href="/lgpd-dados-de-teste">LGPD e dados de teste</a>.
+      </li>
+      <li>
+        Para implementar a validação no seu código, há exemplos em
+        <a href="/codigo">seis linguagens</a>.
+      </li>
+    </ul>
+  </Prose>
+</Base>

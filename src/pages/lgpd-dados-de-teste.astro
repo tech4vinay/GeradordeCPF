@@ -1,0 +1,112 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+
+const titulo = 'LGPD e dados de teste: por que não usar CPF real em homologação';
+const descricao =
+  'CPF é dado pessoal. Copiar a base de produção para homologação cria risco legal e de vazamento. Veja as alternativas: dados sintéticos e mascaramento.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/lgpd-dados-de-teste'));
+
+const schema = {
+  '@type': 'Article',
+  '@id': `${SITE.url}/lgpd-dados-de-teste#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/lgpd-dados-de-teste`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/lgpd-dados-de-teste'),
+  about: { '@type': 'Thing', name: 'Lei Geral de Proteção de Dados (Lei 13.709/2018)' },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="LGPD e dados de teste">
+  <Cabecalho
+    eyebrow="Guia para equipes"
+    titulo="LGPD e dados de teste"
+    lead="Restaurar um backup de produção no ambiente de homologação é o atalho mais comum e um dos mais arriscados. Existe alternativa que dá o mesmo resultado sem expor ninguém."
+  />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <h2>Resposta curta</h2>
+    <p>
+      O CPF é <strong>dado pessoal</strong> pela Lei Geral de Proteção de Dados (Lei
+      13.709/2018): identifica uma pessoa natural. Ambientes de teste costumam ter menos controle
+      de acesso, mais gente com permissão e logs mais soltos que a produção, então cópias de dados
+      reais ali ampliam o risco sem entregar nada que dados fictícios não entreguem.
+    </p>
+
+    <h2>O que a lei pede, em termos práticos</h2>
+    <ul>
+      <li>
+        <strong>Necessidade</strong> (art. 6º, III): tratar só o mínimo indispensável para a
+        finalidade. Testar um formulário não exige o CPF de um cliente de verdade.
+      </li>
+      <li>
+        <strong>Segurança</strong> (art. 6º, VII, e art. 46): adotar medidas técnicas para
+        proteger os dados contra acesso indevido. Um banco de homologação espelhado de produção
+        herda a obrigação sem herdar os controles.
+      </li>
+      <li>
+        <strong>Sanções</strong> (art. 52): vão de advertência a multa de até 2% do faturamento,
+        limitada a R$ 50 milhões por infração, além do dano à reputação e de eventual ação do
+        titular.
+      </li>
+    </ul>
+    <p>
+      Este texto é informativo e não substitui a orientação do jurídico ou do encarregado de
+      dados (DPO) da sua empresa.
+    </p>
+
+    <h2>Três caminhos, do melhor ao pior</h2>
+
+    <h3>1. Dados sintéticos</h3>
+    <p>
+      Gerar tudo do zero: CPFs <a href="/">válidos e fictícios</a>, nomes inventados, e-mails em
+      domínios de teste. Nenhum titular existe por trás, então não há o que vazar. É o caminho
+      certo para testes automatizados e para ambientes de desenvolvimento. Os números só
+      precisam passar na validação, o que o <a href="/como-validar-cpf">módulo 11</a> garante.
+    </p>
+
+    <h3>2. Dados reais anonimizados</h3>
+    <p>
+      Quando é preciso preservar a forma e o volume da base real, a cópia passa por um processo
+      que troca os identificadores por valores fictícios <strong>de forma irreversível</strong>.
+      Pela LGPD (art. 12), dado anonimizado deixa de ser dado pessoal, salvo se o processo puder
+      ser revertido com esforço razoável. Vale conferir também a combinação de campos: data de
+      nascimento, CEP e cargo juntos ainda podem identificar alguém.
+    </p>
+
+    <h3>3. Dados reais mascarados ou pseudonimizados</h3>
+    <p>
+      Trocar o CPF por um hash ou esconder parte dos dígitos reduz o risco, mas o dado continua
+      ligado à pessoa se a chave de reversão existir em algum lugar. Continua sendo dado pessoal
+      e exige os mesmos controles. Serve como etapa intermediária, não como destino.
+    </p>
+
+    <h2>Um CPF sintético pode coincidir com um real?</h2>
+    <p>
+      Pode: existem cerca de 10 bilhões de combinações válidas e uma fração está em uso, e
+      nenhum site independente consegue saber quais. A diferença é que um CPF sintético nasce
+      solto, sem nome, endereço ou histórico de ninguém ligado a ele no seu banco. Para reduzir
+      qualquer ambiguidade, não combine o CPF gerado com dados de uma pessoa real, e
+      <a href="/cpf-falso">nunca o use fora de teste</a>.
+    </p>
+
+    <h2>Checklist para a equipe</h2>
+    <ul>
+      <li>Nenhum dump de produção restaurado em homologação sem anonimização.</li>
+      <li>Fixtures e seeds de teste com CPFs gerados, versionados no repositório.</li>
+      <li>Casos de borda cobertos conforme <a href="/cpf-para-teste">CPF para teste</a>.</li>
+      <li>Logs e capturas de tela de teste revisados antes de irem para chamados e chats.</li>
+      <li>Acesso ao ambiente de teste limitado a quem precisa, como em produção.</li>
+    </ul>
+  </Prose>
+</Base>

@@ -14,6 +14,10 @@
 - [O que é o CPF](https://cpfaleatorio.com/o-que-e-cpf): estrutura dos 11 dígitos e tabela completa de regiões fiscais por estado
 - [Perguntas frequentes](https://cpfaleatorio.com/perguntas-frequentes): legalidade do uso de CPFs gerados, consulta na Receita, dúvidas comuns
 
+- [CPF para teste](https://cpfaleatorio.com/cpf-para-teste): bateria de casos de borda para testar campos de CPF (zero à esquerda, dígito 0, repetidos, máscara)
+- [CPF falso: é crime?](https://cpfaleatorio.com/cpf-falso): diferença entre CPF gerado para teste, CPF de terceiros e documento falsificado
+- [LGPD e dados de teste](https://cpfaleatorio.com/lgpd-dados-de-teste): por que não usar CPF real em homologação e quais as alternativas
+
 ## Código
 
 - [Validar CPF em código](https://cpfaleatorio.com/codigo): implementação de validação e geração em JavaScript, TypeScript, Python, PHP, Java e C#

@@ -1,0 +1,143 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+import { formatar, validar } from '../lib/cpf';
+
+const titulo = 'CPF para teste: como escolher e quais casos cobrir';
+const descricao =
+  'Um CPF válido não basta para testar um formulário. Veja os casos que quebram sistemas de verdade: zero à esquerda, dígito 0, repetidos, máscara e tamanho.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/cpf-para-teste'));
+
+// Cada caso é conferido pelo validador do site na hora do build: se o algoritmo mudar,
+// a tabela muda junto em vez de ficar mentindo.
+const CASOS = [
+  { cpf: '11144477735', rotulo: 'CPF válido, caso base', esperado: true },
+  { cpf: '00000000191', rotulo: 'Zero à esquerda: vira 191 se guardado como número', esperado: true },
+  { cpf: '98765432100', rotulo: 'Os dois verificadores são 0 (resto menor que 2)', esperado: true },
+  { cpf: '11144477736', rotulo: 'Segundo verificador errado', esperado: false },
+  { cpf: '11144477745', rotulo: 'Primeiro verificador errado', esperado: false },
+  { cpf: '11111111111', rotulo: 'Dígitos repetidos: passa no cálculo, mas é rejeitado', esperado: false },
+  { cpf: '1114447773', rotulo: 'Dez dígitos (faltando um)', esperado: false },
+  { cpf: '111444777350', rotulo: 'Doze dígitos (sobrando um)', esperado: false },
+  { cpf: '1114447773A', rotulo: 'Letra no meio dos dígitos', esperado: false },
+].map((c) => ({ ...c, obtido: validar(c.cpf).valido }));
+
+const schema = {
+  '@type': 'Article',
+  '@id': `${SITE.url}/cpf-para-teste#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/cpf-para-teste`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/cpf-para-teste'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+};
+---
+
+<Base titulo={titulo} descricao={descricao} schema={schema} migalha="CPF para teste">
+  <Cabecalho
+    eyebrow="Guia para QA"
+    titulo="CPF para teste: quais casos cobrir"
+    lead="Testar um campo de CPF com um único número válido cobre o caminho feliz e quase nada além disso. Os bugs de produção moram nos outros casos."
+  />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <h2>Resposta curta</h2>
+    <p>
+      Use CPFs <strong>matematicamente válidos e fictícios</strong>, nunca o CPF de uma pessoa
+      real, e monte uma bateria pequena com casos válidos e inválidos. O
+      <a href="/">gerador</a> produz os válidos em volume; a tabela abaixo lista os casos de
+      borda que valem um teste cada.
+    </p>
+
+    <h2>A bateria mínima</h2>
+    <p>
+      Cada linha foi conferida pelo mesmo validador que o site usa, no momento da
+      construção da página.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">CPF</th>
+          <th scope="col">O que testa</th>
+          <th scope="col">Deve ser</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          CASOS.map((c) => (
+            <tr>
+              <td class="font-mono text-ink whitespace-nowrap">{c.cpf.length === 11 && /^\d+$/.test(c.cpf) ? formatar(c.cpf) : c.cpf}</td>
+              <td>{c.rotulo}</td>
+              <td>{c.obtido ? 'Aceito' : 'Rejeitado'}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+
+    <h2>As armadilhas que mais aparecem</h2>
+
+    <h3>Zero à esquerda</h3>
+    <p>
+      Qualquer CPF cujos primeiros dígitos sejam zero. Se o campo for guardado como número inteiro, <code>00000000191</code> vira <code>191</code> e a
+      validação falha depois. CPF é identificador, não quantidade: guarde como texto de 11
+      posições.
+    </p>
+
+    <h3>Dígito verificador igual a zero</h3>
+    <p>
+      Quando o resto da divisão por 11 é 0 ou 1, o dígito verificador vira 0 em vez de
+      <code>11 − resto</code>. É a regra que mais gente implementa errada, e ela atinge cerca de
+      um terço dos CPFs (em pelo menos um dos dois dígitos). Um teste só com CPFs "bonitos" nunca passa por ela.
+      Veja o <a href="/como-validar-cpf">passo a passo do cálculo</a>.
+    </p>
+
+    <h3>Sequências repetidas</h3>
+    <p>
+      <code>000.000.000-00</code> até <code>999.999.999-99</code> passam no módulo 11, e é
+      justamente o que um testador digita primeiro. A convenção é rejeitá-las por uma regra
+      separada. Se o seu sistema aceita, é bug.
+    </p>
+
+    <h3>Com e sem máscara</h3>
+    <p>
+      O mesmo CPF chega como <code>111.444.777-35</code> do navegador e
+      <code>11144477735</code> da API. Teste os dois formatos, e decida onde normalizar. O
+      <a href="/formatador-de-cpf">formatador</a> converte listas inteiras entre eles.
+    </p>
+
+    <h3>Unicidade</h3>
+    <p>
+      Se a coluna tem restrição de unicidade, dados de teste repetidos quebram a carga. O gerador
+      nunca repete um número dentro do mesmo lote. Para abrir a página já configurada, use
+      parâmetros na URL, por exemplo <code>/?uf=SP&amp;qtd=50&amp;pontuacao=0</code>.
+    </p>
+
+    <h2>Fixo ou aleatório?</h2>
+    <p>
+      Nos testes automatizados, prefira uma lista <strong>fixa</strong> de CPFs, versionada junto
+      ao código: o teste que falhou hoje precisa falhar igual amanhã. Reserve a geração
+      aleatória para testes de volume e de propriedade (por exemplo, "todo CPF gerado deve ser
+      válido"). As implementações em <a href="/codigo">seis linguagens</a> trazem as duas
+      funções.
+    </p>
+
+    <h2>Válido não é cadastrado</h2>
+    <p>
+      Se o ambiente de homologação consulta a Receita Federal, um bureau de crédito ou outro
+      serviço externo, um CPF só matematicamente válido vai ser recusado nessa etapa, porque não
+      existe na base. Para esses fluxos, o caminho é o ambiente de sandbox do próprio provedor ou
+      um mock da integração, não um CPF real emprestado. Sobre por que não usar dados reais, leia
+      <a href="/lgpd-dados-de-teste">LGPD e dados de teste</a>.
+    </p>
+  </Prose>
+</Base>
