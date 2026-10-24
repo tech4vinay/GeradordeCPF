@@ -46,6 +46,24 @@ export function dataLegivel(iso: string): string {
   }).format(new Date(iso));
 }
 
+/** Nó FAQPage do grafo JSON-LD de uma página, a partir do mesmo array que renderiza o <Faq>. */
+export function faqSchema(caminho: string, itens: readonly { p: string; r: string }[]) {
+  return {
+    '@type': 'FAQPage',
+    '@id': `${SITE.url}${caminho}#faq`,
+    inLanguage: SITE.idioma,
+    url: `${SITE.url}${caminho}`,
+    isPartOf: { '@id': SITE_ID },
+    publisher: { '@id': ORG_ID },
+    dateModified: atualizadoEm(caminho),
+    mainEntity: itens.map((item) => ({
+      '@type': 'Question',
+      name: item.p,
+      acceptedAnswer: { '@type': 'Answer', text: item.r },
+    })),
+  };
+}
+
 export const NAV = [
   { href: '/', rotulo: 'Gerador' },
   { href: '/validador-de-cpf', rotulo: 'Validador' },
@@ -77,6 +95,7 @@ export const RODAPE = [
     links: [
       { href: '/como-validar-cpf', rotulo: 'Dígito verificador do CPF' },
       { href: '/o-que-e-cpf', rotulo: 'O que é CPF' },
+      { href: '/cpf-invalido', rotulo: 'CPF inválido: o que fazer' },
       { href: '/perguntas-frequentes', rotulo: 'Perguntas frequentes' },
       { href: '/cpf-para-teste', rotulo: 'CPF para teste' },
       { href: '/cpf-falso', rotulo: 'CPF falso: é crime?' },

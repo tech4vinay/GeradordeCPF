@@ -1,0 +1,37 @@
+---
+// Seção de FAQ das páginas de conteúdo. Mesma marcação de /perguntas-frequentes; o schema
+// FAQPage sai do mesmo array via faqSchema() em lib/site.ts, então texto e JSON-LD não divergem.
+interface Props {
+  titulo: string;
+  itens: readonly { p: string; r: string; ver?: { href: string; rotulo: string } }[];
+}
+const { titulo, itens } = Astro.props;
+---
+
+<section class="border-t border-hairline">
+  <div class="mx-auto max-w-2xl px-4 py-14 sm:px-6">
+    <p class="eyebrow mb-3">FAQ</p>
+    <h2 class="heading-lg text-ink">{titulo}</h2>
+
+    <dl class="mt-8 divide-y divide-hairline border-y border-hairline">
+      {
+        itens.map((item) => (
+          <div class="py-6">
+            <dt class="heading-md text-ink">{item.p}</dt>
+            <dd class="mt-2.5 leading-relaxed text-body">
+              {item.r}
+              {item.ver && (
+                <>
+                  {' '}
+                  <a class="text-link underline underline-offset-2" href={item.ver.href}>
+                    {item.ver.rotulo}
+                  </a>
+                </>
+              )}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

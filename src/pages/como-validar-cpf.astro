@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
-import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm, faqSchema } from '../lib/site';
 import { explicarCalculo, formatar } from '../lib/cpf';
 import { CARD, HINT, INPUT, LABEL } from '../lib/ui';
 
@@ -33,9 +34,33 @@ const schema = {
   dateModified: atualizadoEm('/como-validar-cpf'),
   about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
 };
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'Como descobrir os dois últimos dígitos do CPF?',
+    r: 'Calculando-os a partir dos nove primeiros. O primeiro verificador vem da soma dos nove dígitos multiplicados por pesos de 10 a 2; o segundo repete a conta com os dez dígitos e pesos de 11 a 2. Em cada uma, divida a soma por 11: resto menor que 2 vira 0, e nos outros casos o dígito é 11 menos o resto. A calculadora no topo desta página faz as duas contas. Isso só funciona quando você já tem os nove primeiros: não há como deduzir o CPF inteiro de outra pessoa, e um resultado correto não prova que o CPF existe.',
+    ver: { href: '/validador-de-cpf', rotulo: 'Validar um CPF completo.' },
+  },
+  {
+    p: 'O que significa "dígito verificador 04" no comprovante do CPF?',
+    r: 'No comprovante de situação cadastral da Receita Federal, o campo "Dígito Verificador" não é o do módulo 11 explicado nesta página: é um código de dois dígitos que acompanha a situação cadastral. O 04, por exemplo, aparece junto de "Pendente de regularização". O que vale é a situação escrita por extenso no comprovante.',
+    ver: { href: '/cpf-invalido', rotulo: 'Entenda as situações do CPF.' },
+  },
+  {
+    p: 'O dígito verificador do CPF muda de acordo com o estado?',
+    r: 'Não. Os dois verificadores dependem apenas dos nove dígitos que vêm antes, pela conta do módulo 11. O estado entra só pelo nono dígito, que indica a região fiscal e participa da conta como qualquer outro. Por isso CPFs de estados diferentes seguem exatamente a mesma regra de cálculo.',
+    ver: { href: '/o-que-e-cpf#regiao', rotulo: 'Veja a tabela de regiões fiscais.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Dígito verificador do CPF">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/como-validar-cpf', FAQ)]}
+  migalha="Dígito verificador do CPF"
+>
   <Cabecalho
     eyebrow="Algoritmo"
     titulo="Dígito verificador do CPF: como calcular e validar"
@@ -157,7 +182,9 @@ const schema = {
       Validar é a mesma conta: calcule os dois dígitos verificadores a partir dos nove primeiros e
       compare com os dois últimos informados. Se algum for diferente, ou se os 11 dígitos forem
       iguais, o CPF é inválido. Para conferir um número pronto, o
-      <a href="/validador-de-cpf">validador de CPF</a> faz isso e aponta qual dígito falhou.
+      <a href="/validador-de-cpf">validador de CPF</a> faz isso e aponta qual dígito falhou. Se o
+      número foi reprovado, <a href="/cpf-invalido">CPF inválido: o que significa e o que fazer</a>
+      explica as causas e a diferença para um CPF irregular na Receita.
     </p>
 
     <h2>Os dois casos especiais</h2>
@@ -195,6 +222,8 @@ const schema = {
       <a href="/">gerar CPF aleatório</a>: ela mostra a memória de cálculo de cada CPF que produz.
     </p>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre o dígito verificador" itens={FAQ} />
 </Base>
 
 <script>

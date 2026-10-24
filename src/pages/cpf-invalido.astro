@@ -1,0 +1,245 @@
+---
+import Base from '../layouts/Base.astro';
+import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
+import Prose from '../components/Prose.astro';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel, faqSchema } from '../lib/site';
+import { MOTIVOS, validar } from '../lib/cpf';
+
+const titulo = 'CPF inválido: o que significa e como descobrir o motivo';
+const descricao =
+  'CPF inválido pode ser erro na conta dos dígitos ou situação irregular na Receita. Veja como descobrir qual é o seu caso e o que fazer em cada um.';
+
+const ATUALIZADO_LEGIVEL = dataLegivel(atualizadoEm('/cpf-invalido'));
+
+const RECEITA_CONSULTA =
+  'https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp';
+const RECEITA_PERGUNTAS =
+  'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/cadastros/cpf/assuntos-relacionados/perguntas-e-respostas';
+
+// O veredito de cada exemplo vem da mesma função que o validador usa — a tabela não tem
+// como divergir da ferramenta.
+const CASOS = [
+  { situacao: 'Número correto', entrada: '111.444.777-35' },
+  { situacao: 'Último dígito trocado', entrada: '111.444.777-36' },
+  { situacao: 'Dois últimos dígitos invertidos', entrada: '111.444.777-53' },
+  { situacao: 'Um dígito da base errado', entrada: '111.444.778-35' },
+  { situacao: 'Dígito faltando', entrada: '111.444.777-3' },
+  { situacao: 'Zero à esquerda perdido (planilha)', entrada: '4443477735' },
+  { situacao: 'Letra no meio do número', entrada: '111.444.777-3A' },
+  { situacao: 'Todos os dígitos iguais', entrada: '111.111.111-11' },
+].map((c) => {
+  const r = validar(c.entrada);
+  const veredito = r.valido
+    ? 'Válido'
+    : `${MOTIVOS[r.motivo!]}${r.esperado ? ` Esperado: ${r.esperado}.` : ''}`;
+  return { ...c, veredito, valido: r.valido };
+});
+
+const schema = {
+  '@type': 'Article',
+  '@id': `${SITE.url}/cpf-invalido#artigo`,
+  headline: titulo,
+  description: descricao,
+  inLanguage: 'pt-BR',
+  url: `${SITE.url}/cpf-invalido`,
+  isPartOf: { '@id': SITE_ID },
+  publisher: { '@id': ORG_ID },
+  author: { '@id': ORG_ID },
+  dateModified: atualizadoEm('/cpf-invalido'),
+  about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
+};
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'Por que meu CPF aparece como inválido em lojas e aplicativos?',
+    r: 'Há duas causas bem diferentes. A mais simples é de digitação: o formulário faz a conta do módulo 11 e recusa o número se um dígito estiver trocado ou faltando. A outra é cadastral: muitos serviços cruzam o CPF com nome e data de nascimento na base da Receita, e a mensagem de CPF inválido pode aparecer quando o nome não confere ou a situação cadastral não é regular. Comece colando o número no validador; se a conta fecha, consulte a situação do CPF no site da Receita Federal.',
+    ver: { href: '/validador-de-cpf', rotulo: 'Abrir o validador.' },
+  },
+  {
+    p: 'Como consultar se meu CPF está irregular?',
+    r: 'No serviço de consulta de situação cadastral da Receita Federal, no gov.br, informando o número do CPF e a data de nascimento do titular. O resultado mostra se a situação é regular, pendente de regularização, suspensa, cancelada ou nula. Nenhum outro site tem acesso a essa base, então desconfie de quem prometa consultar CPF sem passar pelos canais oficiais.',
+  },
+  {
+    p: 'O CPF pode ser bloqueado por dívida?',
+    r: 'Não. Dívida em atraso deixa o CPF negativado, que é um registro de crédito em empresas como Serasa e SPC e atrapalha financiamentos e cartões, mas não muda a situação cadastral na Receita Federal. O CPF fica irregular por outros motivos: declaração de Imposto de Renda não entregue, dados cadastrais incorretos, inscrição duplicada ou fraude. São dois cadastros diferentes, com caminhos diferentes para resolver.',
+  },
+  {
+    p: 'Quanto custa regularizar um CPF pendente de regularização?',
+    r: 'O CPF fica pendente quando falta entregar alguma declaração do Imposto de Renda, e volta ao normal depois que a declaração atrasada é entregue e processada. O custo é a multa por atraso na entrega: 1% ao mês-calendário ou fração sobre o imposto devido, com teto de 20% e valor mínimo de R$ 165,74, que vale mesmo sem imposto a pagar (valores de referência de 2026; o programa da declaração calcula o valor exato).',
+  },
+  {
+    p: 'O que fazer quando o CPF está cancelado?',
+    r: 'Cancelado significa que a Receita Federal desativou a inscrição, por multiplicidade (a pessoa tem mais de um CPF), decisão administrativa ou decisão judicial. O pedido de regularização pela internet só vale para CPF suspenso, então no cancelado o caminho é o atendimento da Receita Federal, que analisa o motivo. Leve documento de identidade e, se tiver, o comprovante de situação cadastral.',
+  },
+];
+---
+
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/cpf-invalido', FAQ)]}
+  migalha="CPF inválido"
+>
+  <Cabecalho
+    eyebrow="Guia"
+    titulo="CPF inválido: o que significa e como descobrir o motivo"
+    lead="'CPF inválido' tem dois sentidos diferentes: a conta dos dígitos não fecha, ou o número existe mas a Receita Federal o marca como irregular. Cada um se resolve de um jeito."
+  />
+
+  <Prose>
+    <p class="text-sm text-mute">Última atualização: {ATUALIZADO_LEGIVEL}.</p>
+
+    <h2>Resposta curta</h2>
+    <p>
+      Um CPF é <strong>inválido pela conta</strong> quando os dois últimos dígitos não batem com o
+      <a href="/como-validar-cpf">cálculo do dígito verificador (módulo 11)</a> feito sobre os nove
+      primeiros, quase sempre por erro de digitação. Um CPF <strong>irregular</strong> é outra
+      coisa: a situação cadastral dele na Receita Federal é pendente, suspensa, cancelada ou nula, e
+      isso não depende da conta dos dígitos.
+    </p>
+    <p>
+      O <a href="/validador-de-cpf">validador de CPF</a> deste site resolve o primeiro caso e diz
+      qual dígito falhou. O segundo só se descobre nos canais oficiais do gov.br.
+    </p>
+
+    <h2>CPF inválido pela conta: o erro está no número</h2>
+    <p>
+      Por que o CPF aparece como inválido? Quando o validador reprova o número, ele aponta um
+      destes motivos. Os veredictos abaixo saem da mesma função que a ferramenta usa, com o CPF de
+      exemplo <code>111.444.777-35</code>:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">O que aconteceu</th>
+          <th scope="col">Digitado</th>
+          <th scope="col">Veredito do validador</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          CASOS.map((c) => (
+            <tr>
+              <td>{c.situacao}</td>
+              <td>
+                <code>{c.entrada}</code>
+              </td>
+              <td>{c.veredito}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      Quando o motivo é um dígito verificador, o "Esperado" é o par de dígitos que fecharia a
+      conta para os nove primeiros números digitados. Se o erro estava só no final, esse par é o
+      final correto. Se estava nos nove primeiros, o par esperado pertence a outro número, e só
+      conferir o documento resolve.
+    </p>
+
+    <h3>O que fazer</h3>
+    <ol>
+      <li>
+        Compare o número, dígito a dígito, com o documento original: cartão do CPF, RG, CNH ou o
+        comprovante da Receita.
+      </li>
+      <li>
+        Se vem de planilha, veja se o zero à esquerda sumiu. É comum um CPF que começa em 0 perder
+        esse dígito e ficar com 10, como na linha do zero perdido da tabela. O
+        <a href="/cpf-para-teste">CPF para teste</a> detalha essa armadilha.
+      </li>
+      <li>
+        Cole de novo no <a href="/validador-de-cpf">validador</a>. Se a conta fechar, o erro era
+        de digitação; se não, o número informado está errado em outro ponto.
+      </li>
+    </ol>
+
+    <h2>CPF irregular: o número é válido, a situação cadastral não</h2>
+    <p>
+      A <strong>situação cadastral</strong> é um registro na base da Receita Federal, que não é
+      pública, e por isso nenhum validador consegue vê-la. Segundo a
+      <a href={RECEITA_PERGUNTAS} rel="noopener">página de perguntas e respostas sobre o CPF</a> da
+      Receita, as situações possíveis são estas:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Situação</th>
+          <th scope="col">O que a Receita diz</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Regular</td>
+          <td>Não há nenhuma pendência no cadastro do contribuinte.</td>
+        </tr>
+        <tr>
+          <td>Pendente de regularização</td>
+          <td>
+            O contribuinte deixou de entregar alguma Declaração do Imposto de Renda da Pessoa
+            Física (DIRPF) dos últimos cinco anos.
+          </td>
+        </tr>
+        <tr>
+          <td>Suspensa</td>
+          <td>O cadastro do contribuinte está incorreto ou incompleto.</td>
+        </tr>
+        <tr>
+          <td>Cancelada</td>
+          <td>O CPF foi cancelado por multiplicidade, em virtude de decisão administrativa ou judicial.</td>
+        </tr>
+        <tr>
+          <td>Titular falecido</td>
+          <td>Aparece quando é incluído o ano de óbito.</td>
+        </tr>
+        <tr>
+          <td>Nula</td>
+          <td>Foi constatada fraude na inscrição e o CPF foi anulado.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      A Receita também faz questão de separar <strong>situação cadastral</strong> de
+      <strong>situação fiscal</strong>: a primeira é o que aparece no comprovante do CPF; débitos e
+      outras pendências com o Fisco são outra consulta.
+    </p>
+
+    <h3>Como voltar a ficar regular</h3>
+    <ul>
+      <li>
+        <strong>Suspensa</strong>: o CPF é regularizado ao final do atendimento, em uma entidade
+        conveniada ou na própria Receita Federal, para corrigir ou completar o cadastro.
+      </li>
+      <li>
+        <strong>Pendente de regularização</strong>: o CPF é regularizado depois que a declaração
+        omitida é entregue e processada.
+      </li>
+    </ul>
+    <p>
+      Para saber em qual situação o seu CPF está, use a
+      <a href={RECEITA_CONSULTA} rel="noopener">consulta oficial da Receita Federal</a>, que pede os
+      dados do próprio titular. Desconfie de qualquer outro site que prometa consultar CPF: ele não
+      tem acesso a essa base. Mais sobre isso no
+      <a href="/perguntas-frequentes">FAQ</a>.
+    </p>
+
+    <h2>Para quem programa: o sistema rejeita um CPF válido</h2>
+    <p>
+      Se uma aplicação diz "CPF inválido" para um número que o validador aprova, o erro costuma
+      estar na rotina de validação. Os dois descuidos clássicos estão em
+      <a href="/como-validar-cpf">como calcular o dígito verificador</a>: tratar o resto 0 ou 1
+      como se desse 11 ou 10, o que rejeita cerca de um terço dos CPFs válidos, e esquecer de
+      barrar as sequências repetidas, caso em que <code>111.111.111-11</code> passa. A página de
+      <a href="/codigo">código pronto</a> traz a função corrigida em seis linguagens, e a
+      ferramenta para <a href="/">gerar CPF aleatório</a> produz números válidos para testar a sua.
+    </p>
+    <p>
+      Entender o formato ajuda a depurar: veja <a href="/o-que-e-cpf">o que é o CPF</a> e o que
+      cada dígito significa.
+    </p>
+  </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre CPF inválido" itens={FAQ} />
+</Base>

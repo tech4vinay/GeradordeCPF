@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
-import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel, faqSchema } from '../lib/site';
 import { formatar, gerarVarios, validar } from '../lib/cpf';
 import { BTN, CARD } from '../lib/ui';
 
@@ -42,9 +43,33 @@ const schema = {
   dateModified: atualizadoEm('/cpf-para-teste'),
   about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
 };
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá). O exemplo
+// é o caso base da tabela, já conferido pelo validador no build.
+const FAQ = [
+  {
+    p: 'Qual é um CPF válido para usar em teste?',
+    r: `Um exemplo é ${formatar(CASOS[0].cpf)}: ele passa na conta do módulo 11 e no filtro de dígitos repetidos. Os cinco CPFs no topo desta página mudam a cada clique, e o gerador cria até 1000 de uma vez. Lembre que válido não quer dizer cadastrado: o número pode coincidir com o de uma pessoa real, então use-o só em ambiente de teste, nunca em cadastro de verdade.`,
+    ver: { href: '/', rotulo: 'Gerar CPFs válidos.' },
+  },
+  {
+    p: 'Existe um CPF genérico ou oficial para testes?',
+    r: 'A Receita Federal não publica CPFs reservados para teste: qualquer número que passe no módulo 11 serve para validar formato. Para fluxos que consultam um serviço externo, como meios de pagamento, o caminho é o ambiente de sandbox do próprio provedor, que costuma documentar os CPFs de teste que aceita. Para formulários e bancos de homologação, uma lista fixa de CPFs gerados e versionada no repositório cumpre o papel de "CPF genérico".',
+  },
+  {
+    p: 'Como criar CPFs para teste dentro do meu próprio código?',
+    r: 'Sorteie nove dígitos e calcule os dois verificadores pelo módulo 11, em vez de sortear 11 dígitos e descartar os inválidos: só 1 em cada 100 sequências de 11 dígitos passa na validação, então o descarte desperdiça quase tudo. O cálculo está explicado passo a passo, e as funções de geração e validação prontas estão em seis linguagens.',
+    ver: { href: '/codigo', rotulo: 'Ver o código pronto.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="CPF para teste">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/cpf-para-teste', FAQ)]}
+  migalha="CPF para teste"
+>
   <Cabecalho
     eyebrow="Guia para QA"
     titulo="CPF para teste: CPFs válidos e casos de borda"
@@ -159,6 +184,8 @@ const schema = {
       <a href="/lgpd-dados-de-teste">LGPD e dados de teste</a>.
     </p>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre CPF para teste" itens={FAQ} />
 </Base>
 
 <script>

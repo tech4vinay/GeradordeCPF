@@ -2,8 +2,9 @@
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
 import CodigoTabs from '../components/CodigoTabs.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
-import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+import { LINGUAGENS, ORG_ID, SITE, SITE_ID, atualizadoEm, faqSchema } from '../lib/site';
 
 const titulo = 'Como validar CPF em código (JavaScript, Python, PHP, Java, C#, TypeScript)';
 const descricao =
@@ -25,9 +26,31 @@ const schema = {
   dateModified: atualizadoEm('/codigo'),
   about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
 };
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'Posso validar CPF só com regex?',
+    r: 'Só o formato. Uma expressão como ^\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}$ confere se o texto tem 11 dígitos, com ou sem pontuação, mas não diz se os dois últimos dígitos estão certos: 111.444.777-36 passa na regex e falha no cálculo. Use a regex para reconhecer ou limpar a entrada e o módulo 11 para validar, como nas funções acima.',
+  },
+  {
+    p: 'Preciso de uma API para validar CPF no meu sistema?',
+    r: 'Para saber se o número é matematicamente válido, não: é só aritmética, e a função pronta roda no seu servidor ou no navegador, sem chamada externa. Uma API só entra se você precisar confirmar que o CPF existe, ou qual é a situação cadastral dele, e isso depende de serviços que consultam bases oficiais ou de bureaus, geralmente pagos e com autorização do titular.',
+  },
+  {
+    p: 'Posso usar a mesma função para validar CNPJ?',
+    r: 'Não. O CNPJ tem 14 posições, pesos diferentes no módulo 11 e, desde julho de 2026, aceita letras além de números, então precisa de uma função própria. A do CPF continua valendo como está: ele segue com 11 dígitos numéricos.',
+    ver: { href: '/o-que-e-cpf', rotulo: 'Diferença entre CPF e CNPJ.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="Código pronto">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/codigo', FAQ)]}
+  migalha="Código pronto"
+>
   <Cabecalho
     eyebrow="Código"
     titulo="Validar e gerar CPF em código"
@@ -71,4 +94,6 @@ const schema = {
       string vazia.
     </p>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre validar CPF em código" itens={FAQ} />
 </Base>

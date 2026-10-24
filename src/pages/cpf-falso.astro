@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
-import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel, faqSchema } from '../lib/site';
 
 const titulo = 'CPF falso: o que é, é crime e o que usar para testar sistemas';
 const descricao =
@@ -23,9 +24,27 @@ const schema = {
   dateModified: atualizadoEm('/cpf-falso'),
   about: { '@type': 'Thing', name: 'Cadastro de Pessoas Físicas (CPF)' },
 };
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'Coloquei meu CPF em um site falso. O que fazer?',
+    r: 'Aja rápido, mas com calma. Troque as senhas das contas que usam os mesmos dados e ative a verificação em duas etapas. Se você informou também senha, cartão ou código recebido por mensagem, avise o banco ou a operadora para bloquear. Consulte o Registrato, do Banco Central, para ver contas, chaves Pix e operações de crédito em seu nome, e desconfie de qualquer uma que você não reconheça. Registre um boletim de ocorrência, o que costuma ser possível pela delegacia virtual do seu estado, e não responda a mensagens que peçam mais dados. Só o número do CPF raramente basta para abrir uma conta, mas junto com nome e data de nascimento ele serve de base para golpes, então vale acompanhar o seu cadastro nos próximos meses.',
+  },
+  {
+    p: 'Como saber se um CPF é falso ou se existe?',
+    r: 'Pelo número, só dá para saber se ele está errado: o validador mostra se a conta dos dígitos fecha, e um CPF que não fecha foi digitado errado ou inventado. O contrário não vale, porque um CPF que passa na conta ainda pode nunca ter sido emitido, e nenhum site independente enxerga a base da Receita. Quem confirma que o CPF existe e está regular é a consulta oficial no gov.br, que exige o CPF junto da data de nascimento do titular. Em um cadastro, o caminho seguro é cruzar o CPF com nome e data de nascimento ou pedir um documento.',
+    ver: { href: '/validador-de-cpf', rotulo: 'Validar um CPF.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="CPF falso">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/cpf-falso', FAQ)]}
+  migalha="CPF falso"
+>
   <Cabecalho
     eyebrow="Guia"
     titulo="CPF falso: o que é e quando vira crime"
@@ -142,4 +161,6 @@ const schema = {
       </li>
     </ul>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre CPF falso" itens={FAQ} />
 </Base>

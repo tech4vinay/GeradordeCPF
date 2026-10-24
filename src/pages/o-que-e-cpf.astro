@@ -1,9 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
 import { REGIOES, UF_NOMES, formatar, regiaoDe } from '../lib/cpf';
-import { ORG_ID, SITE, SITE_ID, atualizadoEm } from '../lib/site';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, faqSchema } from '../lib/site';
 
 const titulo = 'O que é o CPF: quantos dígitos tem e o que cada um significa';
 const descricao =
@@ -34,9 +35,38 @@ const schema = {
     identifier: String(r.digito),
   })),
 };
+
+// A lista de dígitos vem de REGIOES, a mesma fonte da tabela, para a resposta não divergir dela.
+const DIGITO_POR_REGIAO = REGIOES.map((r) => `${r.digito}: ${r.ufs.join(', ')}`).join('; ');
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'Como saber de qual estado é um CPF?',
+    r: 'Olhe o nono dígito, o último antes do hífen: ele indica a região fiscal onde o CPF foi emitido. É uma pista, não uma certidão: a região é a de emissão, não a de nascimento ou residência, e a maioria delas reúne vários estados. Só São Paulo (8), Minas Gerais (6) e Rio Grande do Sul (0) têm uma região só para si, então só neles dá para apontar o estado com certeza.',
+  },
+  {
+    p: 'CPF com final 8 é de qual estado? E os outros finais?',
+    r: `Quando alguém fala em "final" do CPF, quase sempre quer dizer o nono dígito, o último antes do hífen. O final 8 é de São Paulo. A lista completa, por dígito: ${DIGITO_POR_REGIAO}. Os dois números depois do hífen são os dígitos verificadores e não dizem nada sobre o estado.`,
+  },
+  {
+    p: 'RG é o mesmo que CPF?',
+    r: 'Não. O RG (Registro Geral) é a identidade civil, emitida por cada estado, e a mesma pessoa pode ter números de RG diferentes em estados diferentes. O CPF é um cadastro federal da Receita Federal, com um número só para a vida toda. Desde a Lei 14.534/2023, os novos documentos emitidos por órgãos públicos, como a Carteira de Identidade Nacional, passam a usar o número do CPF como número de identificação, o que aproxima os dois sem torná-los o mesmo documento.',
+  },
+  {
+    p: 'O CPF pode ter letras?',
+    r: 'Não. O CPF tem sempre 11 dígitos numéricos. A mudança para números e letras que começou em julho de 2026 vale para o CNPJ, não para o CPF. Uma letra no meio de um CPF é erro de digitação ou de importação, e o validador aponta como caractere inválido.',
+    ver: { href: '/validador-de-cpf', rotulo: 'Validar um CPF.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="O que é o CPF">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/o-que-e-cpf', FAQ)]}
+  migalha="O que é o CPF"
+>
   <Cabecalho
     eyebrow="Referência"
     titulo="O que é o CPF: quantos dígitos tem e o que cada um significa"
@@ -144,4 +174,6 @@ const schema = {
       <a href="/cpf-falso">CPF falso: é crime?</a>
     </p>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre o CPF" itens={FAQ} />
 </Base>

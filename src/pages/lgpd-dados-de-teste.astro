@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Cabecalho from '../components/Cabecalho.astro';
+import Faq from '../components/Faq.astro';
 import Prose from '../components/Prose.astro';
-import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel } from '../lib/site';
+import { ORG_ID, SITE, SITE_ID, atualizadoEm, dataLegivel, faqSchema } from '../lib/site';
 
 const titulo = 'LGPD e dados de teste: por que não usar CPF real em homologação';
 const descricao =
@@ -23,9 +24,31 @@ const schema = {
   dateModified: atualizadoEm('/lgpd-dados-de-teste'),
   about: { '@type': 'Thing', name: 'Lei Geral de Proteção de Dados (Lei 13.709/2018)' },
 };
+
+// Disjunto das perguntas da home e de /perguntas-frequentes (ver comentário lá).
+const FAQ = [
+  {
+    p: 'CPF é dado sensível pela LGPD?',
+    r: 'Não. Pela LGPD o CPF é dado pessoal, porque identifica uma pessoa natural, mas não está na lista de dados pessoais sensíveis do art. 5º, II: origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou a organização religiosa, filosófica ou política, dados de saúde ou da vida sexual, dados genéticos e biométricos. A diferença importa, mas não é licença para relaxar: o CPF continua exigindo finalidade, segurança e base legal, e combinado com outros dados pode expor a pessoa.',
+  },
+  {
+    p: 'A LGPD proíbe usar dados reais em ambiente de teste?',
+    r: 'Nenhum artigo diz isso com todas as letras. O que existe são princípios que tornam a prática difícil de justificar: finalidade e necessidade (art. 6º), que pedem o mínimo de dados para o objetivo, e segurança (art. 6º, VII, e art. 46), que exige proteger os dados em todos os ambientes. Como dados fictícios entregam o mesmo resultado em teste, copiar a produção dificilmente passa no critério da necessidade. Se for inevitável, anonimize antes: dado anonimizado deixa de ser dado pessoal (art. 12).',
+  },
+  {
+    p: 'Um CPF gerado por ferramenta online é dado pessoal?',
+    r: 'Em geral não: um número gerado ao acaso, sem ligação com nome ou outros dados, não identifica ninguém. A ressalva é que ele pode coincidir com o CPF de uma pessoa real, e no momento em que você o associa a dados de alguém de verdade, o conjunto passa a ser tratado como dado pessoal. Por isso, em teste, combine CPFs gerados apenas com nomes e e-mails fictícios. Este texto é informativo e não substitui a orientação do jurídico ou do encarregado de dados (DPO).',
+    ver: { href: '/', rotulo: 'Gerar CPFs fictícios.' },
+  },
+];
 ---
 
-<Base titulo={titulo} descricao={descricao} schema={schema} migalha="LGPD e dados de teste">
+<Base
+  titulo={titulo}
+  descricao={descricao}
+  schema={[schema, faqSchema('/lgpd-dados-de-teste', FAQ)]}
+  migalha="LGPD e dados de teste"
+>
   <Cabecalho
     eyebrow="Guia para equipes"
     titulo="LGPD e dados de teste"
@@ -110,4 +133,6 @@ const schema = {
       <li>Acesso ao ambiente de teste limitado a quem precisa, como em produção.</li>
     </ul>
   </Prose>
+
+  <Faq titulo="Perguntas frequentes sobre LGPD e dados de teste" itens={FAQ} />
 </Base>

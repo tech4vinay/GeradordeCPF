@@ -62,6 +62,14 @@ const FAQ = [
     p: 'Qual a diferença entre o formatador e o validador de CPF?',
     r: 'O formatador só cuida da aparência: pontuação sim ou não. O validador confere se o número é matematicamente correto pelo cálculo do módulo 11. Os dois são independentes: dá para formatar um CPF inválido, e a saída avisa quando isso acontece, mas não impede a conversão.',
   },
+  {
+    p: 'Como formatar CPF no Excel?',
+    r: 'Para só mudar a aparência, selecione as células, abra Formatar Células > Número > Personalizado e use o formato 000\\.000\\.000\\-00: o Excel mostra 12345678909 como 123.456.789-09 e completa com zeros à esquerda até 11 dígitos. O valor da célula continua sendo o número, sem pontos. Para gerar o texto já pontuado, use a fórmula =TEXTO(A1;"000\\.000\\.000\\-00") (no Excel em inglês, =TEXT(A1,"000\\.000\\.000\\-00")). Se a lista vem de outro sistema, é mais rápido colar tudo no formatador acima e copiar o resultado de volta.',
+  },
+  {
+    p: 'Como não perder o zero à esquerda do CPF no Excel?',
+    r: 'O Excel trata o CPF como número e descarta os zeros do começo: 012.345.678-90 vira 1234567890, com 10 dígitos. Para evitar, formate a coluna como Texto antes de colar ou importar os dados. Para consertar uma coluna que já perdeu os zeros, use =TEXTO(A1;"00000000000"), que recompleta até 11 dígitos. Depois confira no validador: se o CPF continua inválido mesmo com o zero de volta, o erro era outro.',
+  },
 ];
 
 const faqSchema = {
